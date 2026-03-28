@@ -1,14 +1,13 @@
 import { useForgeStore } from '../store';
 import { exportToSkillMd } from '../lib/exportSkill';
 import { X, Copy, Download } from 'lucide-react';
-import { useState } from 'react';
+import { showToast } from './Toast';
 import type { Node } from '@xyflow/react';
 import type { SkillNodeData } from '../types';
 
 export default function ExportPanel() {
   const { nodes, edges, skillName, skillDescription, setSkillName, setSkillDescription, setShowExport } =
     useForgeStore();
-  const [copied, setCopied] = useState(false);
 
   const output = exportToSkillMd(nodes as Node<SkillNodeData>[], edges, {
     skillName,
@@ -17,8 +16,7 @@ export default function ExportPanel() {
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(output);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    showToast('Copied to clipboard');
   };
 
   const handleDownload = () => {
@@ -29,6 +27,7 @@ export default function ExportPanel() {
     a.download = 'SKILL.md';
     a.click();
     URL.revokeObjectURL(url);
+    showToast('Downloaded SKILL.md');
   };
 
   return (
@@ -81,7 +80,7 @@ export default function ExportPanel() {
                        hover:bg-forge-border transition-colors"
           >
             <Copy size={14} />
-            {copied ? 'Copied!' : 'Copy'}
+            Copy
           </button>
           <button
             onClick={handleDownload}

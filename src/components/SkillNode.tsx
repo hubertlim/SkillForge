@@ -4,7 +4,7 @@ import { CATEGORY_COLORS } from '../types';
 import { useForgeStore } from '../store';
 
 export default function SkillNode({ id, data, selected }: NodeProps) {
-  const nodeData = data as unknown as SkillNodeData;
+  const nodeData = data as SkillNodeData;
   const color = CATEGORY_COLORS[nodeData.category];
   const selectNode = useForgeStore((s) => s.selectNode);
 

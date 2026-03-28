@@ -9,7 +9,7 @@ export interface SkillBlockTemplate {
   defaultInstructions: string;
 }
 
-export interface SkillNodeData {
+export interface SkillNodeData extends Record<string, unknown> {
   label: string;
   category: SkillCategory;
   description: string;

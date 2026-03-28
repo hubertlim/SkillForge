@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -6,23 +6,57 @@ import {
   MiniMap,
   BackgroundVariant,
   type ReactFlowInstance,
+  type Node as RFNode,
+  type Edge as RFEdge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { useForgeStore } from '../store';
 import SkillNode from './SkillNode';
+import EmptyState from './EmptyState';
 import { SKILL_BLOCKS } from '../lib/skillBlocks';
 import type { SkillNodeData } from '../types';
 
 const nodeTypes = { skill: SkillNode };
 
-let nodeId = 0;
+let nodeId = Date.now();
 const nextId = () => `skill-${++nodeId}`;
 
-export default function Canvas() {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, addNode, selectNode } =
-    useForgeStore();
-  const rfRef = useRef<ReactFlowInstance | null>(null);
+interface Props {
+  onOpenPresets: () => void;
+  onOpenImport: () => void;
+}
+
+export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
+  const {
+    nodes, edges, onNodesChange, onEdgesChange, onConnect,
+    addNode, selectNode, deleteNode, selectedNodeId, undo, setShowExport,
+  } = useForgeStore();
+  const rfRef = useRef<ReactFlowInstance<RFNode<SkillNodeData>, RFEdge> | null>(null);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Delete selected node
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+        deleteNode(selectedNodeId);
+      }
+      // Ctrl+Z undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      }
+      // Ctrl+S export
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (nodes.length > 0) setShowExport(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [selectedNodeId, deleteNode, undo, setShowExport, nodes.length]);
 
   const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -60,7 +94,10 @@ export default function Canvas() {
   );
 
   return (
-    <div className="flex-1 h-full">
+    <div className="flex-1 h-full relative">
+      {nodes.length === 0 && (
+        <EmptyState onOpenPresets={onOpenPresets} onOpenImport={onOpenImport} />
+      )}
       <ReactFlow
         nodes={nodes}
         edges={edges}
