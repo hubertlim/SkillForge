@@ -11,12 +11,13 @@ import KeyboardHelp from './components/KeyboardHelp';
 import ValidationBar from './components/ValidationBar';
 import ConfirmDialog from './components/ConfirmDialog';
 import MobileWarning from './components/MobileWarning';
+import WorkflowManager from './components/WorkflowManager';
 import ToastContainer, { showToast } from './components/Toast';
 import { useForgeStore } from './store';
 import { encodeWorkflow, decodeWorkflow } from './lib/shareUrl';
 import {
   FileDown, Upload, LayoutTemplate, Share2, Trash2,
-  Undo2, Redo2, AlignVerticalSpaceAround, Keyboard, Maximize2, BookOpen, Camera,
+  Undo2, Redo2, AlignVerticalSpaceAround, Keyboard, Maximize2, BookOpen, Camera, FolderOpen,
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import type { Node } from '@xyflow/react';
@@ -33,6 +34,7 @@ export default function App() {
   const [showGallery, setShowGallery] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showWorkflows, setShowWorkflows] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
 
   useEffect(() => {
@@ -58,6 +60,7 @@ export default function App() {
         setShowGallery(false);
         setShowHelp(false);
         setShowClearConfirm(false);
+        setShowWorkflows(false);
       }
     };
     window.addEventListener('keydown', handler);
@@ -159,6 +162,9 @@ export default function App() {
               <button onClick={() => setShowGallery(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-forge-border hover:border-forge-accent text-forge-muted hover:text-forge-text transition-colors">
                 <BookOpen size={12} /> Gallery
               </button>
+              <button onClick={() => setShowWorkflows(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-forge-border hover:border-forge-accent text-forge-muted hover:text-forge-text transition-colors">
+                <FolderOpen size={12} /> Workflows
+              </button>
               <button onClick={() => setShowPresets(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-forge-border hover:border-forge-accent text-forge-muted hover:text-forge-text transition-colors">
                 <LayoutTemplate size={12} /> Presets
               </button>
@@ -186,6 +192,7 @@ export default function App() {
         {showImport && <ImportModal onClose={() => setShowImport(false)} />}
         {showPresets && <PresetsPanel onClose={() => setShowPresets(false)} />}
         {showGallery && <GalleryPanel onClose={() => setShowGallery(false)} />}
+        {showWorkflows && <WorkflowManager onClose={() => setShowWorkflows(false)} />}
         {showHelp && <KeyboardHelp onClose={() => setShowHelp(false)} />}
         {showClearConfirm && (
           <ConfirmDialog

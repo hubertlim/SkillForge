@@ -14,6 +14,30 @@ import { saveState, loadState, clearState } from './lib/persistence';
 
 const persisted = loadState();
 
+/** Check if adding an edge from source to target would create a cycle */
+function wouldCreateCycle(
+  nodes: Node<SkillNodeData>[],
+  edges: Edge[],
+  source: string,
+  target: string,
+): boolean {
+  // BFS from target — if we can reach source, adding source->target creates a cycle
+  const adj = new Map<string, string[]>();
+  for (const n of nodes) adj.set(n.id, []);
+  for (const e of edges) adj.get(e.source)?.push(e.target);
+
+  const visited = new Set<string>();
+  const queue = [target];
+  while (queue.length) {
+    const cur = queue.shift()!;
+    if (cur === source) return true;
+    if (visited.has(cur)) continue;
+    visited.add(cur);
+    for (const next of adj.get(cur) ?? []) queue.push(next);
+  }
+  return false;
+}
+
 interface ForgeState {
   nodes: Node<SkillNodeData>[];
   edges: Edge[];
@@ -72,6 +96,16 @@ export const useForgeStore = create<ForgeState>((set, get) => ({
     set({ edges: applyEdgeChanges(changes, get().edges) }),
 
   onConnect: (connection) => {
+    // Prevent self-connections
+    if (connection.source === connection.target) return;
+    // Prevent duplicate edges
+    const exists = get().edges.some(
+      (e) => e.source === connection.source && e.target === connection.target,
+    );
+    if (exists) return;
+    // Prevent cycles
+    if (wouldCreateCycle(get().nodes, get().edges, connection.source!, connection.target!)) return;
+
     get().pushHistory();
     set({ edges: addEdge({ ...connection, animated: true }, get().edges) });
   },
