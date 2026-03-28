@@ -16,7 +16,7 @@ import SkillNode from './SkillNode';
 import EmptyState from './EmptyState';
 import NodeContextMenu from './NodeContextMenu';
 import { SKILL_BLOCKS } from '../lib/skillBlocks';
-import type { SkillNodeData } from '../types';
+import { CATEGORY_COLORS, type SkillNodeData, type SkillCategory } from '../types';
 
 const nodeTypes = { skill: SkillNode };
 
@@ -31,7 +31,7 @@ interface Props {
 export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
   const {
     nodes, edges, onNodesChange, onEdgesChange, onConnect,
-    addNode, selectNode, deleteNode, selectedNodeId, undo, setShowExport,
+    addNode, selectNode, deleteNode, selectedNodeId, undo, setShowExport, setFitViewFn,
   } = useForgeStore();
   const rfRef = useRef<ReactFlowInstance<RFNode<SkillNodeData>, RFEdge> | null>(null);
   const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
@@ -39,18 +39,15 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Delete selected node
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
         const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
         deleteNode(selectedNodeId);
       }
-      // Ctrl+Z undo
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
         e.preventDefault();
         undo();
       }
-      // Ctrl+S export
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         if (nodes.length > 0) setShowExport(true);
@@ -95,6 +92,12 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
     [addNode],
   );
 
+  // Category-colored minimap
+  const minimapNodeColor = useCallback((node: RFNode<SkillNodeData>) => {
+    const cat = (node.data as SkillNodeData).category as SkillCategory;
+    return CATEGORY_COLORS[cat] ?? '#7c5cfc';
+  }, []);
+
   return (
     <div className="flex-1 h-full relative">
       {nodes.length === 0 && (
@@ -108,6 +111,7 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
         onConnect={onConnect}
         onInit={(instance) => {
           rfRef.current = instance;
+          setFitViewFn(() => instance.fitView({ padding: 0.2, duration: 300 }));
         }}
         onDragOver={onDragOver}
         onDrop={onDrop}
@@ -124,7 +128,7 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#2a2a3a" />
         <Controls />
         <MiniMap
-          nodeColor={() => '#7c5cfc'}
+          nodeColor={minimapNodeColor}
           maskColor="rgba(0,0,0,0.6)"
         />
       </ReactFlow>

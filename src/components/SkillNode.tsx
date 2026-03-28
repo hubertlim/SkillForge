@@ -39,11 +39,20 @@ function useStepNumber(nodeId: string): number | null {
   }, [nodes, edges, nodeId]);
 }
 
+function truncateInstructions(text: string, maxLines: number = 2): string {
+  const lines = text.split('\n').filter((l) => l.trim());
+  const truncated = lines.slice(0, maxLines).map((l) => l.trim().replace(/^-\s*/, '')).join(', ');
+  if (lines.length > maxLines) return truncated + '...';
+  return truncated;
+}
+
 export default function SkillNode({ id, data, selected }: NodeProps) {
   const nodeData = data as SkillNodeData;
   const color = CATEGORY_COLORS[nodeData.category];
   const selectNode = useForgeStore((s) => s.selectNode);
   const stepNum = useStepNumber(id);
+  const hasNotes = !!((data as SkillNodeData).notes as string);
+  const preview = truncateInstructions(nodeData.instructions);
 
   return (
     <div
@@ -53,7 +62,8 @@ export default function SkillNode({ id, data, selected }: NodeProps) {
         background: '#1e1e2e',
         borderColor: selected ? color : '#2a2a3a',
         boxShadow: selected ? `0 0 16px ${color}44` : undefined,
-        minWidth: 180,
+        minWidth: 200,
+        maxWidth: 260,
       }}
     >
       <Handle type="target" position={Position.Top} />
@@ -68,11 +78,29 @@ export default function SkillNode({ id, data, selected }: NodeProps) {
         </div>
       )}
 
+      {/* Notes indicator */}
+      {hasNotes && (
+        <div
+          className="absolute -top-2.5 -left-2.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-amber-500"
+          title="Has notes"
+        >
+          N
+        </div>
+      )}
+
       <div className="flex items-center gap-2 mb-1">
         <span className="text-lg">{nodeData.icon}</span>
         <span className="font-semibold text-sm text-forge-text">{nodeData.label}</span>
       </div>
       <p className="text-xs text-forge-muted leading-snug">{nodeData.description}</p>
+
+      {/* Instruction preview */}
+      {preview && (
+        <p className="text-[10px] text-forge-muted/60 leading-snug mt-1.5 italic truncate">
+          {preview}
+        </p>
+      )}
+
       <div
         className="absolute top-0 left-0 w-full h-0.5 rounded-t-xl"
         style={{ background: color }}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { SKILL_BLOCKS } from '../lib/skillBlocks';
 import { CATEGORY_COLORS, type SkillCategory } from '../types';
 
@@ -14,6 +14,7 @@ const CATEGORIES: { key: SkillCategory; label: string }[] = [
 
 export default function Sidebar() {
   const [search, setSearch] = useState('');
+  const [collapsed, setCollapsed] = useState(false);
 
   const onDragStart = (e: React.DragEvent, blockId: string) => {
     e.dataTransfer.setData('application/skillforge-block', blockId);
@@ -28,13 +29,38 @@ export default function Sidebar() {
       )
     : SKILL_BLOCKS;
 
+  if (collapsed) {
+    return (
+      <aside className="w-10 shrink-0 bg-forge-surface border-r border-forge-border flex flex-col items-center py-3">
+        <button
+          onClick={() => setCollapsed(false)}
+          className="p-1.5 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors"
+          title="Expand sidebar"
+          aria-label="Expand sidebar"
+        >
+          <PanelLeftOpen size={16} />
+        </button>
+      </aside>
+    );
+  }
+
   return (
     <aside className="w-60 shrink-0 bg-forge-surface border-r border-forge-border flex flex-col overflow-hidden">
-      <div className="px-4 py-4 border-b border-forge-border">
-        <h1 className="text-lg font-bold flex items-center gap-2">
-          <span>⚒️</span> SkillForge
-        </h1>
-        <p className="text-xs text-forge-muted mt-1">Drag blocks onto the canvas</p>
+      <div className="px-4 py-4 border-b border-forge-border flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold flex items-center gap-2">
+            <span>&#x2692;&#xFE0F;</span> SkillForge
+          </h1>
+          <p className="text-xs text-forge-muted mt-1">Drag blocks onto the canvas</p>
+        </div>
+        <button
+          onClick={() => setCollapsed(true)}
+          className="p-1 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors"
+          title="Collapse sidebar"
+          aria-label="Collapse sidebar"
+        >
+          <PanelLeftClose size={14} />
+        </button>
       </div>
 
       {/* Search */}

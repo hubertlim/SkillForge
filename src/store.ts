@@ -47,6 +47,9 @@ interface ForgeState {
   clearCanvas: () => void;
   duplicateNode: (id: string) => void;
   autoLayout: () => void;
+  setFitViewFn: (fn: (() => void) | null) => void;
+  fitView: () => void;
+  _fitViewFn: (() => void) | null;
 }
 
 export const useForgeStore = create<ForgeState>((set, get) => ({
@@ -186,6 +189,13 @@ export const useForgeStore = create<ForgeState>((set, get) => ({
       return { ...n, position: { x: X, y: Y_START + idx * GAP } };
     });
     set({ nodes: updated });
+  },
+
+  _fitViewFn: null,
+  setFitViewFn: (fn) => set({ _fitViewFn: fn } as Partial<ForgeState>),
+  fitView: () => {
+    const fn = (get() as ForgeState & { _fitViewFn: (() => void) | null })._fitViewFn;
+    fn?.();
   },
 }));
 

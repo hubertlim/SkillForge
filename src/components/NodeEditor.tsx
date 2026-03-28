@@ -1,6 +1,16 @@
 import { useForgeStore } from '../store';
-import { CATEGORY_COLORS } from '../types';
+import { CATEGORY_COLORS, type SkillCategory } from '../types';
 import { Trash2, Copy } from 'lucide-react';
+import WorkflowStats from './WorkflowStats';
+
+const CATEGORY_OPTIONS: { key: SkillCategory; label: string }[] = [
+  { key: 'planning', label: 'Planning' },
+  { key: 'coding', label: 'Coding' },
+  { key: 'testing', label: 'Testing' },
+  { key: 'review', label: 'Review' },
+  { key: 'utility', label: 'Utility' },
+  { key: 'custom', label: 'Custom' },
+];
 
 export default function NodeEditor() {
   const { nodes, selectedNodeId, updateNodeData, deleteNode, duplicateNode } = useForgeStore();
@@ -8,10 +18,18 @@ export default function NodeEditor() {
 
   if (!node) {
     return (
-      <aside className="w-72 shrink-0 bg-forge-surface border-l border-forge-border flex items-center justify-center">
-        <p className="text-forge-muted text-sm text-center px-6">
-          Select a node on the canvas to edit its properties
-        </p>
+      <aside className="w-72 shrink-0 bg-forge-surface border-l border-forge-border flex flex-col overflow-hidden">
+        {nodes.length > 0 ? (
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            <WorkflowStats />
+          </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-forge-muted text-sm text-center px-6">
+              Select a node on the canvas to edit its properties
+            </p>
+          </div>
+        )}
       </aside>
     );
   }
@@ -56,6 +74,19 @@ export default function NodeEditor() {
           />
         </div>
         <div>
+          <label className="block text-xs text-forge-muted mb-1">Category</label>
+          <select
+            value={data.category}
+            onChange={(e) => updateNodeData(node.id, { category: e.target.value as SkillCategory })}
+            className="w-full bg-forge-bg border border-forge-border rounded-lg px-3 py-2 text-sm
+                       focus:outline-none focus:border-forge-accent appearance-none cursor-pointer"
+          >
+            {CATEGORY_OPTIONS.map((c) => (
+              <option key={c.key} value={c.key}>{c.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
           <label className="block text-xs text-forge-muted mb-1">Description</label>
           <input
             value={data.description}
@@ -69,10 +100,22 @@ export default function NodeEditor() {
           <textarea
             value={data.instructions}
             onChange={(e) => updateNodeData(node.id, { instructions: e.target.value })}
-            rows={12}
+            rows={10}
             className="w-full bg-forge-bg border border-forge-border rounded-lg px-3 py-2 text-sm
                        font-mono leading-relaxed resize-y
                        focus:outline-none focus:border-forge-accent"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-forge-muted mb-1">Notes (not exported)</label>
+          <textarea
+            value={(data.notes as string) ?? ''}
+            onChange={(e) => updateNodeData(node.id, { notes: e.target.value })}
+            rows={3}
+            placeholder="Internal notes, reminders, TODOs..."
+            className="w-full bg-forge-bg border border-forge-border rounded-lg px-3 py-2 text-sm
+                       leading-relaxed resize-y
+                       focus:outline-none focus:border-forge-accent placeholder:text-forge-muted/40"
           />
         </div>
         <div className="flex items-center gap-2 text-xs text-forge-muted">

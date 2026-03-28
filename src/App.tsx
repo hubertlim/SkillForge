@@ -13,14 +13,14 @@ import { useForgeStore } from './store';
 import { encodeWorkflow, decodeWorkflow } from './lib/shareUrl';
 import {
   FileDown, Upload, LayoutTemplate, Share2, Trash2,
-  Undo2, AlignVerticalSpaceAround, Keyboard,
+  Undo2, AlignVerticalSpaceAround, Keyboard, Maximize2,
 } from 'lucide-react';
 import type { Node } from '@xyflow/react';
 import type { SkillNodeData } from './types';
 
 export default function App() {
   const store = useForgeStore();
-  const { showExport, setShowExport, nodes, edges, skillName, skillDescription, undo, clearCanvas, autoLayout } = store;
+  const { showExport, setShowExport, nodes, edges, skillName, skillDescription, undo, clearCanvas, autoLayout, fitView } = store;
   const [showImport, setShowImport] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -114,6 +114,16 @@ export default function App() {
                 aria-label="Keyboard shortcuts"
               >
                 <Keyboard size={13} />
+              </button>
+              <button
+                onClick={fitView}
+                disabled={nodes.length === 0}
+                className="p-1.5 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors
+                           disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Fit to view"
+                aria-label="Fit to view"
+              >
+                <Maximize2 size={13} />
               </button>
             </div>
           </div>
