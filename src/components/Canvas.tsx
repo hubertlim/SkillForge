@@ -5,20 +5,19 @@ import {
   Controls,
   MiniMap,
   BackgroundVariant,
-  type ReactFlowInstance,
-  type Node as RFNode,
-  type Edge as RFEdge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { useForgeStore } from '../store';
 import SkillNode from './SkillNode';
+import LabeledEdge from './LabeledEdge';
 import EmptyState from './EmptyState';
 import NodeContextMenu from './NodeContextMenu';
 import { SKILL_BLOCKS } from '../lib/skillBlocks';
 import { CATEGORY_COLORS, type SkillNodeData, type SkillCategory } from '../types';
 
 const nodeTypes = { skill: SkillNode };
+const edgeTypes = { labeled: LabeledEdge };
 
 let nodeId = Date.now();
 const nextId = () => `skill-${++nodeId}`;
@@ -33,10 +32,10 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
     nodes, edges, onNodesChange, onEdgesChange, onConnect,
     addNode, selectNode, deleteNode, selectedNodeId, undo, setShowExport, setFitViewFn,
   } = useForgeStore();
-  const rfRef = useRef<ReactFlowInstance<RFNode<SkillNodeData>, RFEdge> | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rfRef = useRef<any>(null);
   const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
@@ -74,6 +73,10 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
         y: e.clientY,
       });
 
+      // Snap to grid
+      position.x = Math.round(position.x / 20) * 20;
+      position.y = Math.round(position.y / 20) * 20;
+
       const newNode = {
         id: nextId(),
         type: 'skill' as const,
@@ -92,11 +95,16 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
     [addNode],
   );
 
-  // Category-colored minimap
-  const minimapNodeColor = useCallback((node: RFNode<SkillNodeData>) => {
+  const minimapNodeColor = useCallback((node: { data: Record<string, unknown> }) => {
     const cat = (node.data as SkillNodeData).category as SkillCategory;
     return CATEGORY_COLORS[cat] ?? '#7c5cfc';
   }, []);
+
+  // Apply labeled edge type to all edges
+  const styledEdges = edges.map((e) => ({
+    ...e,
+    type: 'labeled' as const,
+  }));
 
   return (
     <div className="flex-1 h-full relative">
@@ -105,7 +113,7 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
       )}
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={styledEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
@@ -121,6 +129,9 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
           setContextMenu({ nodeId: node.id, x: e.clientX, y: e.clientY });
         }}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        snapToGrid
+        snapGrid={[20, 20]}
         fitView
         proOptions={{ hideAttribution: true }}
         defaultEdgeOptions={{ animated: true }}
