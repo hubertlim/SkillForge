@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useForgeStore } from '../store';
 import { CheckCircle, Circle, X, ChevronRight, PartyPopper } from 'lucide-react';
 import { showToast } from './Toast';
@@ -43,32 +43,15 @@ const STEPS: TutorialStep[] = [
   },
 ];
 
-function useStepComplete(stepId: string): boolean {
-  const nodeCount = useForgeStore((s) => s.nodes.length);
-  const edgeCount = useForgeStore((s) => s.edges.length);
-  const selectedNodeId = useForgeStore((s) => s.selectedNodeId);
-
+function checkStep(stepId: string, nodeCount: number, edgeCount: number, hasSelection: boolean): boolean {
   switch (stepId) {
     case 'drag': return nodeCount >= 1;
     case 'second': return nodeCount >= 2;
     case 'connect': return edgeCount >= 1;
-    case 'select': return selectedNodeId !== null;
+    case 'select': return hasSelection;
     case 'third': return nodeCount >= 3 && edgeCount >= 2;
     default: return false;
   }
-}
-
-function StepChecker({ stepId, onComplete }: { stepId: string; onComplete: () => void }) {
-  const isComplete = useStepComplete(stepId);
-
-  useEffect(() => {
-    if (isComplete) {
-      const timer = setTimeout(onComplete, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isComplete, onComplete]);
-
-  return null;
 }
 
 interface Props {
@@ -78,26 +61,51 @@ interface Props {
 
 export default function InteractiveTutorial({ onClose, onComplete }: Props) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [completedSet, setCompletedSet] = useState<boolean[]>(() => STEPS.map(() => false));
   const [showHint, setShowHint] = useState(false);
   const [finished, setFinished] = useState(false);
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const step = STEPS[currentStep];
+  // Subscribe to store changes directly
+  const nodeCount = useForgeStore((s) => s.nodes.length);
+  const edgeCount = useForgeStore((s) => s.edges.length);
+  const hasSelection = useForgeStore((s) => s.selectedNodeId !== null);
 
-  const handleStepComplete = () => {
-    setCompletedSteps((prev) => {
-      const next = new Set(prev);
-      next.add(currentStep);
+  const advance = useCallback(() => {
+    setCompletedSet((prev) => {
+      const next = [...prev];
+      next[currentStep] = true;
       return next;
     });
     setShowHint(false);
 
     if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep((s) => s + 1);
     } else {
       setFinished(true);
     }
-  };
+  }, [currentStep]);
+
+  // Check current step completion
+  useEffect(() => {
+    if (finished) return;
+    if (completedSet[currentStep]) return;
+
+    const step = STEPS[currentStep];
+    const isComplete = checkStep(step.id, nodeCount, edgeCount, hasSelection);
+
+    if (isComplete) {
+      // Clear any pending timer
+      if (advanceTimer.current) clearTimeout(advanceTimer.current);
+      advanceTimer.current = setTimeout(advance, 400);
+    }
+
+    return () => {
+      if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    };
+  }, [nodeCount, edgeCount, hasSelection, currentStep, finished, completedSet, advance]);
+
+  const completedCount = completedSet.filter(Boolean).length;
 
   if (finished) {
     return (
@@ -119,72 +127,56 @@ export default function InteractiveTutorial({ onClose, onComplete }: Props) {
     );
   }
 
-  if (!step) return null;
+  const step = STEPS[currentStep];
 
   return (
-    <>
-      {/* Reactive checker — reads store directly via selector hooks */}
-      {!completedSteps.has(currentStep) && (
-        <StepChecker stepId={step.id} onComplete={handleStepComplete} />
-      )}
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[80] animate-slide-up">
+      <div className="bg-forge-surface border border-forge-border rounded-2xl shadow-2xl w-[480px]">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-forge-border">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-forge-accent">Tutorial</span>
+            <span className="text-[10px] text-forge-muted">{completedCount}/{STEPS.length} tasks</span>
+          </div>
+          <button onClick={onClose} className="p-1 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors" aria-label="Close tutorial">
+            <X size={13} />
+          </button>
+        </div>
 
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[80] animate-slide-up">
-        <div className="bg-forge-surface border border-forge-border rounded-2xl shadow-2xl w-[480px]">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-forge-border">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-forge-accent">Tutorial</span>
-              <span className="text-[10px] text-forge-muted">
-                {completedSteps.size}/{STEPS.length} tasks
-              </span>
-            </div>
-            <button onClick={onClose} className="p-1 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors" aria-label="Close tutorial">
-              <X size={13} />
-            </button>
+        <div className="h-0.5 bg-forge-bg">
+          <div className="h-full bg-forge-accent transition-all duration-500" style={{ width: `${(completedCount / STEPS.length) * 100}%` }} />
+        </div>
+
+        <div className="px-4 py-3">
+          <div className="space-y-1.5 mb-3">
+            {STEPS.map((s, i) => {
+              const done = completedSet[i];
+              const active = i === currentStep;
+              return (
+                <div key={s.id} className={`flex items-center gap-2 text-xs ${active ? 'text-forge-text' : done ? 'text-emerald-400' : 'text-forge-muted/50'}`}>
+                  {done ? (
+                    <CheckCircle size={14} className="text-emerald-400 shrink-0" />
+                  ) : (
+                    <Circle size={14} className={`shrink-0 ${active ? 'text-forge-accent' : ''}`} />
+                  )}
+                  <span className={done ? 'line-through opacity-60' : ''}>{s.title}</span>
+                  {active && !done && <ChevronRight size={12} className="text-forge-accent" />}
+                </div>
+              );
+            })}
           </div>
 
-          {/* Progress bar */}
-          <div className="h-0.5 bg-forge-bg">
-            <div
-              className="h-full bg-forge-accent transition-all duration-500"
-              style={{ width: `${(completedSteps.size / STEPS.length) * 100}%` }}
-            />
-          </div>
-
-          {/* Task list */}
-          <div className="px-4 py-3">
-            <div className="space-y-1.5 mb-3">
-              {STEPS.map((s, i) => {
-                const done = completedSteps.has(i);
-                const active = i === currentStep;
-                return (
-                  <div key={s.id} className={`flex items-center gap-2 text-xs ${active ? 'text-forge-text' : done ? 'text-emerald-400' : 'text-forge-muted/50'}`}>
-                    {done ? (
-                      <CheckCircle size={14} className="text-emerald-400 shrink-0" />
-                    ) : (
-                      <Circle size={14} className={`shrink-0 ${active ? 'text-forge-accent' : ''}`} />
-                    )}
-                    <span className={done ? 'line-through opacity-60' : ''}>{s.title}</span>
-                    {active && !done && <ChevronRight size={12} className="text-forge-accent" />}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Current task detail */}
-            <div className="bg-forge-bg rounded-lg px-3 py-2.5 border border-forge-border">
-              <p className="text-xs text-forge-text leading-relaxed">{step.instruction}</p>
-              {showHint ? (
-                <p className="text-[11px] text-forge-accent mt-1.5 leading-relaxed">{step.hint}</p>
-              ) : (
-                <button onClick={() => setShowHint(true)} className="text-[11px] text-forge-muted hover:text-forge-accent mt-1.5 transition-colors">
-                  Need a hint?
-                </button>
-              )}
-            </div>
+          <div className="bg-forge-bg rounded-lg px-3 py-2.5 border border-forge-border">
+            <p className="text-xs text-forge-text leading-relaxed">{step.instruction}</p>
+            {showHint ? (
+              <p className="text-[11px] text-forge-accent mt-1.5 leading-relaxed">{step.hint}</p>
+            ) : (
+              <button onClick={() => setShowHint(true)} className="text-[11px] text-forge-muted hover:text-forge-accent mt-1.5 transition-colors">
+                Need a hint?
+              </button>
+            )}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
