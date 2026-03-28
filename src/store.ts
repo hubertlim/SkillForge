@@ -76,6 +76,10 @@ interface ForgeState {
   setFitViewFn: (fn: (() => void) | null) => void;
   fitView: () => void;
   _fitViewFn: (() => void) | null;
+  getSelectedNodeIds: () => string[];
+  deleteSelectedNodes: () => void;
+  duplicateSelectedNodes: () => void;
+  selectAllNodes: () => void;
 }
 
 export const useForgeStore = create<ForgeState>((set, get) => ({
@@ -253,6 +257,40 @@ export const useForgeStore = create<ForgeState>((set, get) => ({
   fitView: () => {
     const fn = (get() as ForgeState & { _fitViewFn: (() => void) | null })._fitViewFn;
     fn?.();
+  },
+
+  getSelectedNodeIds: () => get().nodes.filter((n) => n.selected).map((n) => n.id),
+
+  deleteSelectedNodes: () => {
+    const ids = get().nodes.filter((n) => n.selected).map((n) => n.id);
+    if (ids.length === 0) return;
+    get().pushHistory();
+    const idSet = new Set(ids);
+    set({
+      nodes: get().nodes.filter((n) => !idSet.has(n.id)),
+      edges: get().edges.filter((e) => !idSet.has(e.source) && !idSet.has(e.target)),
+      selectedNodeId: null,
+    });
+  },
+
+  duplicateSelectedNodes: () => {
+    const selected = get().nodes.filter((n) => n.selected);
+    if (selected.length === 0) return;
+    get().pushHistory();
+    const newNodes = selected.map((n) => ({
+      ...n,
+      id: `skill-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+      position: { x: n.position.x + 40, y: n.position.y + 40 },
+      selected: false,
+      data: { ...n.data },
+    }));
+    set({ nodes: [...get().nodes, ...newNodes] });
+  },
+
+  selectAllNodes: () => {
+    set({
+      nodes: get().nodes.map((n) => ({ ...n, selected: true })),
+    });
   },
 }));
 

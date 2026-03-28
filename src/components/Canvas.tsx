@@ -5,6 +5,7 @@ import {
   Controls,
   MiniMap,
   BackgroundVariant,
+  SelectionMode,
   addEdge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -14,6 +15,7 @@ import SkillNode from './SkillNode';
 import LabeledEdge from './LabeledEdge';
 import EmptyState from './EmptyState';
 import NodeContextMenu from './NodeContextMenu';
+import MultiSelectToolbar from './MultiSelectToolbar';
 import ZoomIndicator from './ZoomIndicator';
 import { SKILL_BLOCKS } from '../lib/skillBlocks';
 import { CATEGORY_COLORS, type SkillNodeData, type SkillCategory } from '../types';
@@ -35,7 +37,8 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
   const store = useForgeStore();
   const {
     nodes, edges, onNodesChange, onEdgesChange, onConnect,
-    addNode, selectNode, deleteNode, selectedNodeId, undo, redo, setShowExport, setFitViewFn,
+    addNode, selectNode, deleteNode, deleteSelectedNodes, selectAllNodes,
+    selectedNodeId, undo, redo, setShowExport, setFitViewFn,
   } = store;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rfRef = useRef<any>(null);
@@ -43,10 +46,22 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
-        const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
-        deleteNode(selectedNodeId);
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
+
+      // Delete: remove selected nodes (single or multi)
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const multiSelected = nodes.filter((n) => n.selected);
+        if (multiSelected.length > 1) {
+          deleteSelectedNodes();
+        } else if (selectedNodeId) {
+          deleteNode(selectedNodeId);
+        }
+      }
+      // Ctrl+A: select all
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        selectAllNodes();
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
@@ -67,7 +82,7 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [selectedNodeId, deleteNode, undo, redo, setShowExport, nodes.length]);
+  }, [selectedNodeId, deleteNode, deleteSelectedNodes, selectAllNodes, undo, redo, setShowExport, nodes]);
 
   const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -81,11 +96,7 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
       const template = SKILL_BLOCKS.find((b) => b.id === blockId);
       if (!template || !rfRef.current) return;
 
-      const position = rfRef.current.screenToFlowPosition({
-        x: e.clientX,
-        y: e.clientY,
-      });
-
+      const position = rfRef.current.screenToFlowPosition({ x: e.clientX, y: e.clientY });
       position.x = Math.round(position.x / 20) * 20;
       position.y = Math.round(position.y / 20) * 20;
 
@@ -105,7 +116,6 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
 
       addNode(newNode);
 
-      // Auto-connect: find the closest node above the drop position
       const currentNodes = store.nodes;
       const currentEdges = store.edges;
       let closestAbove: { id: string; dist: number } | null = null;
@@ -113,7 +123,6 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
       for (const n of currentNodes) {
         const dy = position.y - n.position.y;
         const dx = Math.abs(position.x - n.position.x);
-        // Must be above and within horizontal range
         if (dy > 20 && dy < AUTO_CONNECT_DISTANCE * 2 && dx < AUTO_CONNECT_DISTANCE) {
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (!closestAbove || dist < closestAbove.dist) {
@@ -123,7 +132,6 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
       }
 
       if (closestAbove) {
-        // Check no existing edge from that node to the new one
         const alreadyConnected = currentEdges.some(
           (edge) => edge.source === closestAbove!.id && edge.target === newId,
         );
@@ -144,16 +152,14 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
     return CATEGORY_COLORS[cat] ?? '#7c5cfc';
   }, []);
 
-  const styledEdges = edges.map((e) => ({
-    ...e,
-    type: 'labeled' as const,
-  }));
+  const styledEdges = edges.map((e) => ({ ...e, type: 'labeled' as const }));
 
   return (
     <div className="flex-1 h-full relative">
       {nodes.length === 0 && (
         <EmptyState onOpenPresets={onOpenPresets} onOpenImport={onOpenImport} />
       )}
+      <MultiSelectToolbar />
       <ReactFlow
         nodes={nodes}
         edges={styledEdges}
@@ -173,6 +179,9 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
         }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        selectionOnDrag
+        selectionMode={SelectionMode.Partial}
+        panOnDrag={[1, 2]}
         snapToGrid
         snapGrid={[20, 20]}
         fitView
@@ -181,10 +190,7 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#2a2a3a" />
         <Controls />
-        <MiniMap
-          nodeColor={minimapNodeColor}
-          maskColor="rgba(0,0,0,0.6)"
-        />
+        <MiniMap nodeColor={minimapNodeColor} maskColor="rgba(0,0,0,0.6)" />
         <ZoomIndicator />
       </ReactFlow>
       {contextMenu && (

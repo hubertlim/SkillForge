@@ -9,8 +9,11 @@ const SHORTCUTS = [
   { keys: ['Ctrl', 'Shift', 'Z'], action: 'Redo' },
   { keys: ['Ctrl', 'Y'], action: 'Redo (alt)' },
   { keys: ['Ctrl', 'S'], action: 'Open export panel' },
-  { keys: ['Delete'], action: 'Delete selected node' },
-  { keys: ['Backspace'], action: 'Delete selected node' },
+  { keys: ['Ctrl', 'A'], action: 'Select all blocks' },
+  { keys: ['Delete'], action: 'Delete selected block(s)' },
+  { keys: ['Backspace'], action: 'Delete selected block(s)' },
+  { keys: ['Shift', 'Click'], action: 'Add to selection' },
+  { keys: ['Drag'], action: 'Box select (on empty area)' },
   { keys: ['?'], action: 'Toggle this help' },
   { keys: ['Escape'], action: 'Close any open panel' },
 ];

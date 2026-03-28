@@ -1,7 +1,8 @@
 import { useForgeStore } from '../store';
 import { CATEGORY_COLORS, type SkillCategory } from '../types';
-import { Trash2, Copy } from 'lucide-react';
+import { Trash2, Copy, Layers } from 'lucide-react';
 import WorkflowStats from './WorkflowStats';
+import { showToast } from './Toast';
 
 const CATEGORY_OPTIONS: { key: SkillCategory; label: string }[] = [
   { key: 'planning', label: 'Planning' },
@@ -13,9 +14,65 @@ const CATEGORY_OPTIONS: { key: SkillCategory; label: string }[] = [
 ];
 
 export default function NodeEditor() {
-  const { nodes, selectedNodeId, updateNodeData, deleteNode, duplicateNode } = useForgeStore();
-  const node = nodes.find((n) => n.id === selectedNodeId);
+  const { nodes, selectedNodeId, updateNodeData, deleteNode, duplicateNode,
+          deleteSelectedNodes, duplicateSelectedNodes } = useForgeStore();
 
+  const selectedNodes = nodes.filter((n) => n.selected);
+  const multiSelected = selectedNodes.length > 1;
+  const node = !multiSelected ? nodes.find((n) => n.id === selectedNodeId) : null;
+
+  // Multi-selection view
+  if (multiSelected) {
+    return (
+      <aside className="w-72 shrink-0 bg-forge-surface border-l border-forge-border flex flex-col overflow-hidden">
+        <div className="px-4 py-3 border-b border-forge-border flex items-center gap-2">
+          <Layers size={14} className="text-forge-accent" />
+          <span className="font-semibold text-sm">{selectedNodes.length} blocks selected</span>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          <div className="space-y-1.5">
+            {selectedNodes.map((n) => (
+              <div key={n.id} className="flex items-center gap-2 text-xs text-forge-muted">
+                <div className="w-2 h-2 rounded-full" style={{ background: CATEGORY_COLORS[n.data.category] }} />
+                <span>{n.data.icon} {n.data.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-2">
+            <button
+              onClick={() => {
+                duplicateSelectedNodes();
+                showToast(`Duplicated ${selectedNodes.length} blocks`);
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs border border-forge-border
+                         hover:border-forge-accent text-forge-muted hover:text-forge-text transition-colors"
+            >
+              <Copy size={13} />
+              Duplicate all
+            </button>
+            <button
+              onClick={() => {
+                deleteSelectedNodes();
+                showToast(`Deleted ${selectedNodes.length} blocks`);
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs border border-forge-border
+                         hover:border-red-500/50 text-forge-muted hover:text-red-400 transition-colors"
+            >
+              <Trash2 size={13} />
+              Delete all
+            </button>
+          </div>
+
+          <p className="text-[11px] text-forge-muted leading-relaxed">
+            Shift+click or drag-select to add/remove blocks from the selection. Press Delete to remove all selected.
+          </p>
+        </div>
+      </aside>
+    );
+  }
+
+  // No selection
   if (!node) {
     return (
       <aside className="w-72 shrink-0 bg-forge-surface border-l border-forge-border flex flex-col overflow-hidden">
@@ -34,6 +91,7 @@ export default function NodeEditor() {
     );
   }
 
+  // Single selection
   const data = node.data;
   const color = CATEGORY_COLORS[data.category];
 
