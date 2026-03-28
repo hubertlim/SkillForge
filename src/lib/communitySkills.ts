@@ -175,4 +175,116 @@ description: "Use when designing a new API or endpoint"
 - Generate documentation from the spec
 - Set up API monitoring`,
   },
+  {
+    id: 'security-hardening',
+    name: 'Security Hardening',
+    description: 'Systematic security review and hardening for production applications',
+    author: 'SkillForge',
+    tags: ['security', 'audit', 'production'],
+    content: `---
+name: "security-hardening"
+description: "Use when preparing an application for production security review"
+---
+
+## Step 1: Dependency Audit
+
+> Scan and update vulnerable dependencies
+
+- Run npm audit / pip audit / equivalent
+- Update packages with known CVEs
+- Remove unused dependencies
+- Pin dependency versions
+
+## Step 2: Input Validation
+
+> Harden all user-facing inputs
+
+- Validate and sanitize all form inputs
+- Add rate limiting to API endpoints
+- Implement CSRF protection
+- Set up Content Security Policy headers
+
+## Step 3: Authentication Review
+
+> Verify auth implementation
+
+- Check password hashing (bcrypt/argon2)
+- Verify JWT token expiration and rotation
+- Review session management
+- Test for broken access control
+
+## Step 4: Secrets Management
+
+> Ensure no secrets are exposed
+
+- Move all secrets to environment variables
+- Rotate any previously committed keys
+- Set up secret scanning in CI
+- Review .gitignore for sensitive files
+
+## Step 5: Monitoring
+
+> Set up security monitoring
+
+- Enable logging for auth events
+- Set up alerts for suspicious activity
+- Configure error tracking (no PII in logs)
+- Document incident response procedure`,
+  },
+  {
+    id: 'database-migration',
+    name: 'Database Migration',
+    description: 'Safe database schema migration with rollback planning',
+    author: 'SkillForge',
+    tags: ['database', 'migration', 'devops'],
+    content: `---
+name: "database-migration"
+description: "Use when performing database schema changes or data migrations"
+---
+
+## Step 1: Plan Migration
+
+> Document current and target state
+
+- Map current schema to target schema
+- Identify breaking changes
+- Estimate data volume and migration time
+- Plan maintenance window if needed
+
+## Step 2: Write Migration Scripts
+
+> Create reversible migration files
+
+- Write forward migration (up)
+- Write rollback migration (down)
+- Handle data transformations
+- Add indexes after bulk inserts
+
+## Step 3: Test on Copy
+
+> Validate against production-like data
+
+- Clone production database (anonymized)
+- Run migration on the copy
+- Verify data integrity after migration
+- Measure execution time
+
+## Step 4: Execute
+
+> Run the migration
+
+- Take a database backup
+- Run migration in a transaction if possible
+- Monitor for errors during execution
+- Verify application works with new schema
+
+## Step 5: Verify and Monitor
+
+> Confirm everything is healthy
+
+- Run data integrity checks
+- Monitor application error rates
+- Check query performance
+- Keep rollback ready for 24 hours`,
+  },
 ];

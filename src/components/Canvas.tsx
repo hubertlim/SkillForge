@@ -5,6 +5,7 @@ import {
   Controls,
   MiniMap,
   BackgroundVariant,
+  addEdge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -13,6 +14,7 @@ import SkillNode from './SkillNode';
 import LabeledEdge from './LabeledEdge';
 import EmptyState from './EmptyState';
 import NodeContextMenu from './NodeContextMenu';
+import ZoomIndicator from './ZoomIndicator';
 import { SKILL_BLOCKS } from '../lib/skillBlocks';
 import { CATEGORY_COLORS, type SkillNodeData, type SkillCategory } from '../types';
 
@@ -22,16 +24,19 @@ const edgeTypes = { labeled: LabeledEdge };
 let nodeId = Date.now();
 const nextId = () => `skill-${++nodeId}`;
 
+const AUTO_CONNECT_DISTANCE = 120;
+
 interface Props {
   onOpenPresets: () => void;
   onOpenImport: () => void;
 }
 
 export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
+  const store = useForgeStore();
   const {
     nodes, edges, onNodesChange, onEdgesChange, onConnect,
     addNode, selectNode, deleteNode, selectedNodeId, undo, redo, setShowExport, setFitViewFn,
-  } = useForgeStore();
+  } = store;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rfRef = useRef<any>(null);
   const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
@@ -81,12 +86,12 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
         y: e.clientY,
       });
 
-      // Snap to grid
       position.x = Math.round(position.x / 20) * 20;
       position.y = Math.round(position.y / 20) * 20;
 
+      const newId = nextId();
       const newNode = {
-        id: nextId(),
+        id: newId,
         type: 'skill' as const,
         position,
         data: {
@@ -99,8 +104,39 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
       };
 
       addNode(newNode);
+
+      // Auto-connect: find the closest node above the drop position
+      const currentNodes = store.nodes;
+      const currentEdges = store.edges;
+      let closestAbove: { id: string; dist: number } | null = null;
+
+      for (const n of currentNodes) {
+        const dy = position.y - n.position.y;
+        const dx = Math.abs(position.x - n.position.x);
+        // Must be above and within horizontal range
+        if (dy > 20 && dy < AUTO_CONNECT_DISTANCE * 2 && dx < AUTO_CONNECT_DISTANCE) {
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (!closestAbove || dist < closestAbove.dist) {
+            closestAbove = { id: n.id, dist };
+          }
+        }
+      }
+
+      if (closestAbove) {
+        // Check no existing edge from that node to the new one
+        const alreadyConnected = currentEdges.some(
+          (edge) => edge.source === closestAbove!.id && edge.target === newId,
+        );
+        if (!alreadyConnected) {
+          const newEdges = addEdge(
+            { id: `auto-${Date.now()}`, source: closestAbove.id, target: newId, animated: true },
+            currentEdges,
+          );
+          useForgeStore.setState({ edges: newEdges });
+        }
+      }
     },
-    [addNode],
+    [addNode, store],
   );
 
   const minimapNodeColor = useCallback((node: { data: Record<string, unknown> }) => {
@@ -108,7 +144,6 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
     return CATEGORY_COLORS[cat] ?? '#7c5cfc';
   }, []);
 
-  // Apply labeled edge type to all edges
   const styledEdges = edges.map((e) => ({
     ...e,
     type: 'labeled' as const,
@@ -150,6 +185,7 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
           nodeColor={minimapNodeColor}
           maskColor="rgba(0,0,0,0.6)"
         />
+        <ZoomIndicator />
       </ReactFlow>
       {contextMenu && (
         <NodeContextMenu

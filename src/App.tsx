@@ -12,6 +12,7 @@ import ValidationBar from './components/ValidationBar';
 import ConfirmDialog from './components/ConfirmDialog';
 import MobileWarning from './components/MobileWarning';
 import WorkflowManager from './components/WorkflowManager';
+import OnboardingTour, { shouldShowTour } from './components/OnboardingTour';
 import ToastContainer, { showToast } from './components/Toast';
 import { useForgeStore } from './store';
 import { encodeWorkflow, decodeWorkflow } from './lib/shareUrl';
@@ -35,6 +36,7 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showWorkflows, setShowWorkflows] = useState(false);
+  const [showTour, setShowTour] = useState(() => shouldShowTour());
   const [editingTitle, setEditingTitle] = useState(false);
 
   useEffect(() => {
@@ -194,6 +196,7 @@ export default function App() {
         {showGallery && <GalleryPanel onClose={() => setShowGallery(false)} />}
         {showWorkflows && <WorkflowManager onClose={() => setShowWorkflows(false)} />}
         {showHelp && <KeyboardHelp onClose={() => setShowHelp(false)} />}
+        {showTour && <OnboardingTour onClose={() => setShowTour(false)} />}
         {showClearConfirm && (
           <ConfirmDialog
             title="Clear canvas?"
