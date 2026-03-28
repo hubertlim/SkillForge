@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <rect width="120" height="120" rx="24" fill="#1a1a24"/>
+  <rect x="2" y="2" width="116" height="116" rx="22" stroke="#7c5cfc" stroke-width="2" stroke-opacity="0.4"/>
+  <!-- Anvil shape -->
+  <path d="M35 75 L85 75 L80 65 L40 65 Z" fill="#7c5cfc"/>
+  <rect x="50" y="45" width="20" height="20" rx="2" fill="#7c5cfc"/>
+  <!-- Hammer -->
+  <rect x="56" y="28" width="8" height="20" rx="2" fill="#9478ff"/>
+  <rect x="48" y="22" width="24" height="10" rx="3" fill="#9478ff"/>
+  <!-- Sparks -->
+  <circle cx="38" cy="52" r="2" fill="#f59e0b" opacity="0.8"/>
+  <circle cx="82" cy="48" r="1.5" fill="#f59e0b" opacity="0.6"/>
+  <circle cx="44" cy="42" r="1.5" fill="#f59e0b" opacity="0.7"/>
+  <!-- Node dots -->
+  <circle cx="30" cy="90" r="4" fill="#3b82f6"/>
+  <circle cx="60" cy="90" r="4" fill="#10b981"/>
+  <circle cx="90" cy="90" r="4" fill="#ef4444"/>
+  <!-- Connection lines -->
+  <line x1="34" y1="90" x2="56" y2="90" stroke="#2a2a3a" stroke-width="1.5"/>
+  <line x1="64" y1="90" x2="86" y2="90" stroke="#2a2a3a" stroke-width="1.5"/>
+</svg>

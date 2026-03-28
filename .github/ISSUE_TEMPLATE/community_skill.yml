@@ -1,0 +1,47 @@
+name: 🧩 Community Skill Submission
+description: Submit a skill workflow to the community gallery
+labels: ["community-skill"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share your skill workflow with the community. You can also submit directly via PR to `community-skills/`.
+
+  - type: input
+    id: skill-name
+    attributes:
+      label: Skill name
+      placeholder: e.g. tdd-workflow, api-design, code-review-checklist
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What does this skill do?
+      description: Brief description of the workflow and when to use it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: skill-content
+    attributes:
+      label: SKILL.md content
+      description: Paste the exported SKILL.md content here.
+      render: markdown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: agents
+    attributes:
+      label: Tested with
+      multiple: true
+      options:
+        - Claude Code
+        - Kiro
+        - GitHub Copilot
+        - Cursor
+        - Other
+    validations:
+      required: true
