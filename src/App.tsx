@@ -12,13 +12,17 @@ import ValidationBar from './components/ValidationBar';
 import ConfirmDialog from './components/ConfirmDialog';
 import MobileWarning from './components/MobileWarning';
 import WorkflowManager from './components/WorkflowManager';
-import OnboardingTour, { shouldShowTour } from './components/OnboardingTour';
+import WelcomeScreen from './components/WelcomeScreen';
+import InteractiveTutorial from './components/InteractiveTutorial';
+import DocsPanel from './components/DocsPanel';
+import { shouldShowOnboarding, dismissOnboarding } from './components/OnboardingTour';
 import ToastContainer, { showToast } from './components/Toast';
 import { useForgeStore } from './store';
 import { encodeWorkflow, decodeWorkflow } from './lib/shareUrl';
 import {
   FileDown, Upload, LayoutTemplate, Share2, Trash2,
-  Undo2, Redo2, AlignVerticalSpaceAround, Keyboard, Maximize2, BookOpen, Camera, FolderOpen,
+  Undo2, Redo2, AlignVerticalSpaceAround, Maximize2, BookOpen, Camera,
+  FolderOpen, HelpCircle,
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import type { Node } from '@xyflow/react';
@@ -30,15 +34,25 @@ export default function App() {
     showExport, setShowExport, nodes, edges, skillName, skillDescription,
     setSkillName, undo, redo, clearCanvas, autoLayout, fitView,
   } = store;
+
+  // Modal states
   const [showImport, setShowImport] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showWorkflows, setShowWorkflows] = useState(false);
-  const [showTour, setShowTour] = useState(() => shouldShowTour());
+  const [showDocs, setShowDocs] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
 
+  // Onboarding states
+  const [showWelcome, setShowWelcome] = useState(() => shouldShowOnboarding());
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Help dropdown
+  const [helpMenuOpen, setHelpMenuOpen] = useState(false);
+
+  // Load from URL hash
   useEffect(() => {
     const hash = window.location.hash.slice(1);
     if (!hash) return;
@@ -47,9 +61,11 @@ export default function App() {
       store.loadWorkflow(decoded.nodes, decoded.edges, decoded.skillName, decoded.skillDescription);
       showToast(`Loaded shared workflow "${decoded.skillName}"`);
       window.location.hash = '';
+      setShowWelcome(false); // Don't show welcome if loading a shared workflow
     }
   }, []);
 
+  // Global keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -63,11 +79,21 @@ export default function App() {
         setShowHelp(false);
         setShowClearConfirm(false);
         setShowWorkflows(false);
+        setShowDocs(false);
+        setHelpMenuOpen(false);
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [setShowExport]);
+
+  // Close help menu on outside click
+  useEffect(() => {
+    if (!helpMenuOpen) return;
+    const handler = () => setHelpMenuOpen(false);
+    setTimeout(() => document.addEventListener('click', handler), 0);
+    return () => document.removeEventListener('click', handler);
+  }, [helpMenuOpen]);
 
   const handleShare = async () => {
     const encoded = encodeWorkflow(nodes as Node<SkillNodeData>[], edges, skillName, skillDescription);
@@ -90,7 +116,6 @@ export default function App() {
         backgroundColor: '#0f0f13',
         pixelRatio: 2,
         filter: (node) => {
-          // Hide controls and minimap from screenshot
           const cls = (node as HTMLElement).className ?? '';
           if (typeof cls === 'string' && (cls.includes('react-flow__controls') || cls.includes('react-flow__minimap'))) return false;
           return true;
@@ -104,6 +129,24 @@ export default function App() {
     } catch {
       showToast('Screenshot failed', 'error');
     }
+  };
+
+  // Welcome screen handlers
+  const handleWelcomeStartTutorial = () => {
+    dismissOnboarding();
+    setShowWelcome(false);
+    setShowTutorial(true);
+  };
+
+  const handleWelcomeOpenDocs = () => {
+    dismissOnboarding();
+    setShowWelcome(false);
+    setShowDocs(true);
+  };
+
+  const handleWelcomeSkip = () => {
+    dismissOnboarding();
+    setShowWelcome(false);
   };
 
   return (
@@ -154,9 +197,49 @@ export default function App() {
                   <Camera size={13} />
                 </button>
                 <div className="w-px h-4 bg-forge-border mx-0.5" />
-                <button onClick={() => setShowHelp(true)} className="p-1.5 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">
-                  <Keyboard size={13} />
-                </button>
+
+                {/* Help dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setHelpMenuOpen(!helpMenuOpen); }}
+                    className="p-1.5 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors"
+                    title="Help & Learning"
+                    aria-label="Help menu"
+                  >
+                    <HelpCircle size={13} />
+                  </button>
+                  {helpMenuOpen && (
+                    <div className="absolute top-full left-0 mt-1 bg-forge-surface border border-forge-border rounded-lg shadow-2xl py-1 min-w-[180px] z-50">
+                      <button
+                        onClick={() => { setShowTutorial(true); setHelpMenuOpen(false); }}
+                        className="w-full text-left px-3 py-2 text-xs text-forge-text hover:bg-forge-bg transition-colors"
+                      >
+                        Interactive Tutorial
+                      </button>
+                      <button
+                        onClick={() => { setShowDocs(true); setHelpMenuOpen(false); }}
+                        className="w-full text-left px-3 py-2 text-xs text-forge-text hover:bg-forge-bg transition-colors"
+                      >
+                        Documentation
+                      </button>
+                      <button
+                        onClick={() => { setShowHelp(true); setHelpMenuOpen(false); }}
+                        className="w-full text-left px-3 py-2 text-xs text-forge-text hover:bg-forge-bg transition-colors"
+                      >
+                        Keyboard Shortcuts
+                      </button>
+                      <div className="border-t border-forge-border my-1" />
+                      <a
+                        href="https://github.com/hubertlim/SkillForge"
+                        target="_blank"
+                        rel="noopener"
+                        className="block px-3 py-2 text-xs text-forge-muted hover:text-forge-text hover:bg-forge-bg transition-colors"
+                      >
+                        GitHub Repository
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -190,13 +273,14 @@ export default function App() {
           <ValidationBar />
         </div>
 
+        {/* Modals */}
         {showExport && <ExportPanel />}
         {showImport && <ImportModal onClose={() => setShowImport(false)} />}
         {showPresets && <PresetsPanel onClose={() => setShowPresets(false)} />}
         {showGallery && <GalleryPanel onClose={() => setShowGallery(false)} />}
         {showWorkflows && <WorkflowManager onClose={() => setShowWorkflows(false)} />}
         {showHelp && <KeyboardHelp onClose={() => setShowHelp(false)} />}
-        {showTour && <OnboardingTour onClose={() => setShowTour(false)} />}
+        {showDocs && <DocsPanel onClose={() => setShowDocs(false)} />}
         {showClearConfirm && (
           <ConfirmDialog
             title="Clear canvas?"
@@ -206,6 +290,22 @@ export default function App() {
             onCancel={() => setShowClearConfirm(false)}
           />
         )}
+
+        {/* Onboarding */}
+        {showWelcome && (
+          <WelcomeScreen
+            onStartTutorial={handleWelcomeStartTutorial}
+            onOpenDocs={handleWelcomeOpenDocs}
+            onSkip={handleWelcomeSkip}
+          />
+        )}
+        {showTutorial && (
+          <InteractiveTutorial
+            onClose={() => setShowTutorial(false)}
+            onComplete={() => setShowTutorial(false)}
+          />
+        )}
+
         <ToastContainer />
       </ReactFlowProvider>
     </>
