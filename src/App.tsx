@@ -16,8 +16,9 @@ import { useForgeStore } from './store';
 import { encodeWorkflow, decodeWorkflow } from './lib/shareUrl';
 import {
   FileDown, Upload, LayoutTemplate, Share2, Trash2,
-  Undo2, AlignVerticalSpaceAround, Keyboard, Maximize2, BookOpen,
+  Undo2, Redo2, AlignVerticalSpaceAround, Keyboard, Maximize2, BookOpen, Camera,
 } from 'lucide-react';
+import { toPng } from 'html-to-image';
 import type { Node } from '@xyflow/react';
 import type { SkillNodeData } from './types';
 
@@ -25,7 +26,7 @@ export default function App() {
   const store = useForgeStore();
   const {
     showExport, setShowExport, nodes, edges, skillName, skillDescription,
-    setSkillName, undo, clearCanvas, autoLayout, fitView,
+    setSkillName, undo, redo, clearCanvas, autoLayout, fitView,
   } = store;
   const [showImport, setShowImport] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
@@ -34,7 +35,6 @@ export default function App() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
 
-  // Load from URL hash on mount
   useEffect(() => {
     const hash = window.location.hash.slice(1);
     if (!hash) return;
@@ -46,12 +46,10 @@ export default function App() {
     }
   }, []);
 
-  // Global keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-
       if (e.key === '?') setShowHelp((v) => !v);
       if (e.key === 'Escape') {
         setShowExport(false);
@@ -67,12 +65,7 @@ export default function App() {
   }, [setShowExport]);
 
   const handleShare = async () => {
-    const encoded = encodeWorkflow(
-      nodes as Node<SkillNodeData>[],
-      edges,
-      skillName,
-      skillDescription,
-    );
+    const encoded = encodeWorkflow(nodes as Node<SkillNodeData>[], edges, skillName, skillDescription);
     const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
     await navigator.clipboard.writeText(url);
     showToast('Share link copied to clipboard');
@@ -84,14 +77,35 @@ export default function App() {
     showToast('Canvas cleared');
   };
 
+  const handleScreenshot = async () => {
+    const viewport = document.querySelector('.react-flow__viewport') as HTMLElement;
+    if (!viewport) return;
+    try {
+      const dataUrl = await toPng(viewport, {
+        backgroundColor: '#0f0f13',
+        pixelRatio: 2,
+        filter: (node) => {
+          // Hide controls and minimap from screenshot
+          const cls = (node as HTMLElement).className ?? '';
+          if (typeof cls === 'string' && (cls.includes('react-flow__controls') || cls.includes('react-flow__minimap'))) return false;
+          return true;
+        },
+      });
+      const link = document.createElement('a');
+      link.download = `${skillName}-workflow.png`;
+      link.href = dataUrl;
+      link.click();
+      showToast('Screenshot saved');
+    } catch {
+      showToast('Screenshot failed', 'error');
+    }
+  };
+
   return (
     <>
-      {/* Mobile warning — shown only on small screens */}
       <MobileWarning />
-
       <ReactFlowProvider>
         <div className="h-screen w-screen flex-col overflow-hidden hidden md:flex">
-          {/* Top bar */}
           <header className="h-11 shrink-0 bg-forge-surface border-b border-forge-border flex items-center justify-between px-4">
             <div className="flex items-center gap-3">
               {editingTitle ? (
@@ -101,8 +115,7 @@ export default function App() {
                   onChange={(e) => setSkillName(e.target.value)}
                   onBlur={() => setEditingTitle(false)}
                   onKeyDown={(e) => { if (e.key === 'Enter') setEditingTitle(false); }}
-                  className="bg-forge-bg border border-forge-accent rounded px-2 py-0.5 text-xs w-36
-                             focus:outline-none text-forge-text"
+                  className="bg-forge-bg border border-forge-accent rounded px-2 py-0.5 text-xs w-36 focus:outline-none text-forge-text"
                 />
               ) : (
                 <button
@@ -113,15 +126,16 @@ export default function App() {
                   {skillName}
                 </button>
               )}
-
-              <span className="text-[10px] text-forge-muted">
-                {nodes.length} block{nodes.length !== 1 ? 's' : ''}
-              </span>
+              <span className="text-[10px] text-forge-muted">{nodes.length} block{nodes.length !== 1 ? 's' : ''}</span>
 
               <div className="flex items-center gap-0.5 ml-1">
                 <button onClick={undo} className="p-1.5 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors" title="Undo (Ctrl+Z)" aria-label="Undo">
                   <Undo2 size={13} />
                 </button>
+                <button onClick={redo} className="p-1.5 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">
+                  <Redo2 size={13} />
+                </button>
+                <div className="w-px h-4 bg-forge-border mx-0.5" />
                 <button onClick={() => nodes.length > 0 && setShowClearConfirm(true)} disabled={nodes.length === 0} className="p-1.5 rounded hover:bg-red-500/20 text-forge-muted hover:text-red-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Clear canvas" aria-label="Clear canvas">
                   <Trash2 size={13} />
                 </button>
@@ -131,6 +145,10 @@ export default function App() {
                 <button onClick={fitView} disabled={nodes.length === 0} className="p-1.5 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Fit to view" aria-label="Fit to view">
                   <Maximize2 size={13} />
                 </button>
+                <button onClick={handleScreenshot} disabled={nodes.length === 0} className="p-1.5 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Screenshot (PNG)" aria-label="Screenshot">
+                  <Camera size={13} />
+                </button>
+                <div className="w-px h-4 bg-forge-border mx-0.5" />
                 <button onClick={() => setShowHelp(true)} className="p-1.5 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">
                   <Keyboard size={13} />
                 </button>
@@ -139,24 +157,19 @@ export default function App() {
 
             <div className="flex items-center gap-2">
               <button onClick={() => setShowGallery(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-forge-border hover:border-forge-accent text-forge-muted hover:text-forge-text transition-colors">
-                <BookOpen size={12} />
-                Gallery
+                <BookOpen size={12} /> Gallery
               </button>
               <button onClick={() => setShowPresets(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-forge-border hover:border-forge-accent text-forge-muted hover:text-forge-text transition-colors">
-                <LayoutTemplate size={12} />
-                Presets
+                <LayoutTemplate size={12} /> Presets
               </button>
               <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-forge-border hover:border-forge-accent text-forge-muted hover:text-forge-text transition-colors">
-                <Upload size={12} />
-                Import
+                <Upload size={12} /> Import
               </button>
               <button onClick={handleShare} disabled={nodes.length === 0} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-forge-border hover:border-forge-accent text-forge-muted hover:text-forge-text transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                <Share2 size={12} />
-                Share
+                <Share2 size={12} /> Share
               </button>
               <button onClick={() => setShowExport(true)} disabled={nodes.length === 0} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-forge-accent hover:bg-forge-accent-hover text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                <FileDown size={13} />
-                Export
+                <FileDown size={13} /> Export
               </button>
             </div>
           </header>
@@ -166,7 +179,6 @@ export default function App() {
             <Canvas onOpenPresets={() => setShowPresets(true)} onOpenImport={() => setShowImport(true)} />
             <NodeEditor />
           </div>
-
           <ValidationBar />
         </div>
 

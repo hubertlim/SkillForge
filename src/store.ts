@@ -22,9 +22,10 @@ interface ForgeState {
   skillDescription: string;
   showExport: boolean;
 
-  // History for undo
+  // History for undo/redo
   history: { nodes: Node<SkillNodeData>[]; edges: Edge[] }[];
   historyIndex: number;
+  redoStack: { nodes: Node<SkillNodeData>[]; edges: Edge[] }[];
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -44,6 +45,7 @@ interface ForgeState {
   ) => void;
   pushHistory: () => void;
   undo: () => void;
+  redo: () => void;
   clearCanvas: () => void;
   duplicateNode: (id: string) => void;
   autoLayout: () => void;
@@ -61,6 +63,7 @@ export const useForgeStore = create<ForgeState>((set, get) => ({
   showExport: false,
   history: [],
   historyIndex: -1,
+  redoStack: [],
 
   onNodesChange: (changes) =>
     set({ nodes: applyNodeChanges(changes, get().nodes) as Node<SkillNodeData>[] }),
@@ -106,25 +109,45 @@ export const useForgeStore = create<ForgeState>((set, get) => ({
   },
 
   pushHistory: () => {
-    const { nodes, edges, history, historyIndex } = get();
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push({
+    const { nodes, edges, history } = get();
+    const snapshot = {
       nodes: JSON.parse(JSON.stringify(nodes)),
       edges: JSON.parse(JSON.stringify(edges)),
-    });
-    // Keep max 30 history entries
+    };
+    const newHistory = [...history, snapshot];
     if (newHistory.length > 30) newHistory.shift();
-    set({ history: newHistory, historyIndex: newHistory.length - 1 });
+    set({ history: newHistory, historyIndex: newHistory.length - 1, redoStack: [] });
   },
 
   undo: () => {
-    const { history, historyIndex } = get();
-    if (historyIndex < 0) return;
-    const entry = history[historyIndex];
+    const { history, nodes, edges } = get();
+    if (history.length === 0) return;
+    const prev = history[history.length - 1];
+    const currentSnapshot = {
+      nodes: JSON.parse(JSON.stringify(nodes)),
+      edges: JSON.parse(JSON.stringify(edges)),
+    };
     set({
-      nodes: entry.nodes,
-      edges: entry.edges,
-      historyIndex: historyIndex - 1,
+      nodes: prev.nodes,
+      edges: prev.edges,
+      history: history.slice(0, -1),
+      redoStack: [...get().redoStack, currentSnapshot],
+    });
+  },
+
+  redo: () => {
+    const { redoStack, nodes, edges, history } = get();
+    if (redoStack.length === 0) return;
+    const next = redoStack[redoStack.length - 1];
+    const currentSnapshot = {
+      nodes: JSON.parse(JSON.stringify(nodes)),
+      edges: JSON.parse(JSON.stringify(edges)),
+    };
+    set({
+      nodes: next.nodes,
+      edges: next.edges,
+      history: [...history, currentSnapshot],
+      redoStack: redoStack.slice(0, -1),
     });
   },
 

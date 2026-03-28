@@ -30,7 +30,7 @@ interface Props {
 export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
   const {
     nodes, edges, onNodesChange, onEdgesChange, onConnect,
-    addNode, selectNode, deleteNode, selectedNodeId, undo, setShowExport, setFitViewFn,
+    addNode, selectNode, deleteNode, selectedNodeId, undo, redo, setShowExport, setFitViewFn,
   } = useForgeStore();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rfRef = useRef<any>(null);
@@ -43,9 +43,17 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
         deleteNode(selectedNodeId);
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        redo();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault();
+        redo();
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
@@ -54,7 +62,7 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [selectedNodeId, deleteNode, undo, setShowExport, nodes.length]);
+  }, [selectedNodeId, deleteNode, undo, redo, setShowExport, nodes.length]);
 
   const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
