@@ -5,17 +5,17 @@ Thanks for your interest in contributing. Here's how to get started.
 ## Ways to contribute
 
 - **Submit a skill** — drop a `SKILL.md` into `community-skills/` and open a PR
-- **Report a bug** — use the [Bug Report](https://github.com/user/skillforge/issues/new?template=bug_report.yml) template
-- **Request a feature** — use the [Feature Request](https://github.com/user/skillforge/issues/new?template=feature_request.yml) template
+- **Report a bug** — use the [Bug Report](https://github.com/hubertlim/SkillForge/issues/new?template=bug_report.yml) template
+- **Request a feature** — use the [Feature Request](https://github.com/hubertlim/SkillForge/issues/new?template=feature_request.yml) template
 - **Improve docs** — typos, clarifications, examples — all welcome
 - **Add a skill block** — new block templates go in `src/lib/skillBlocks.ts`
-- **Fix an issue** — check [good first issues](https://github.com/user/skillforge/labels/good%20first%20issue)
+- **Fix an issue** — check [good first issues](https://github.com/hubertlim/SkillForge/labels/good%20first%20issue)
 
 ## Development setup
 
 ```bash
-git clone https://github.com/user/skillforge.git
-cd skillforge
+git clone https://github.com/hubertlim/SkillForge.git
+cd SkillForge
 npm install
 npm run dev
 ```

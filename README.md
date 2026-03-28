@@ -18,16 +18,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/user/skillforge/actions"><img src="https://img.shields.io/github/actions/workflow/status/user/skillforge/ci.yml?style=flat-square&label=build" alt="CI" /></a>
-  <a href="https://github.com/user/skillforge/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-7c5cfc?style=flat-square" alt="MIT License" /></a>
-  <a href="https://github.com/user/skillforge/stargazers"><img src="https://img.shields.io/github/stars/user/skillforge?style=flat-square&color=7c5cfc" alt="Stars" /></a>
-  <a href="https://github.com/user/skillforge/issues"><img src="https://img.shields.io/github/issues/user/skillforge?style=flat-square" alt="Issues" /></a>
-  <a href="https://github.com/user/skillforge/pulls"><img src="https://img.shields.io/github/issues-pr/user/skillforge?style=flat-square" alt="PRs" /></a>
+  <a href="https://github.com/hubertlim/SkillForge/actions"><img src="https://img.shields.io/github/actions/workflow/status/hubertlim/SkillForge/ci.yml?style=flat-square&label=build" alt="CI" /></a>
+  <a href="https://github.com/hubertlim/SkillForge/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-7c5cfc?style=flat-square" alt="MIT License" /></a>
+  <a href="https://github.com/hubertlim/SkillForge/stargazers"><img src="https://img.shields.io/github/stars/hubertlim/SkillForge?style=flat-square&color=7c5cfc" alt="Stars" /></a>
+  <a href="https://github.com/hubertlim/SkillForge/issues"><img src="https://img.shields.io/github/issues/hubertlim/SkillForge?style=flat-square" alt="Issues" /></a>
+  <a href="https://github.com/hubertlim/SkillForge/pulls"><img src="https://img.shields.io/github/issues-pr/hubertlim/SkillForge?style=flat-square" alt="PRs" /></a>
 </p>
 
-<p align="center">
+<!-- Add a screenshot: take one and save as docs/screenshot.png -->
+<!-- <p align="center">
   <img src="docs/screenshot.png" width="800" alt="SkillForge screenshot" />
-</p>
+</p> -->
 
 ---
 
@@ -43,6 +44,11 @@ SkillForge gives you a visual canvas where you drag skill blocks, wire them into
 - 🔗 **Wire workflows** — connect blocks to define execution order
 - ✏️ **Inline editing** — label, description, and Markdown instructions per node
 - 📄 **One-click export** — generates valid `SKILL.md` with YAML frontmatter
+- � **Import** — load an existing `SKILL.md` fback onto the canvas (file upload or paste)
+- � **Shareable links** — encode your workflow into a URL and share it with anyone
+- 📦 **Preset templates** — start from TDD, API Design, Bug Fix, or Feature Ship workflows
+- ⏪ **Undo** — Ctrl+Z with a 30-step history stack
+- ⌨️ **Keyboard shortcuts** — Delete nodes, Ctrl+Z undo, Ctrl+S export
 - 📋 **Copy or download** — clipboard or file, your choice
 - 🌙 **Dark theme** — easy on the eyes, built for long sessions
 - 🐳 **Dockerized** — one command to run
@@ -52,8 +58,8 @@ SkillForge gives you a visual canvas where you drag skill blocks, wire them into
 ### Docker (recommended)
 
 ```bash
-git clone https://github.com/user/skillforge.git
-cd skillforge
+git clone https://github.com/hubertlim/SkillForge.git
+cd SkillForge
 docker compose up --build
 ```
 
@@ -62,8 +68,8 @@ Open [http://localhost:5173](http://localhost:5173)
 ### Local
 
 ```bash
-git clone https://github.com/user/skillforge.git
-cd skillforge
+git clone https://github.com/hubertlim/SkillForge.git
+cd SkillForge
 npm install
 npm run dev
 ```
@@ -74,6 +80,9 @@ npm run dev
 2. **Connect** blocks by dragging from a bottom handle to a top handle
 3. **Click** a block to edit its label, description, and instructions
 4. **Export** — hit the button in the top bar to preview, copy, or download your `SKILL.md`
+5. **Share** — click Share to copy a link that anyone can open to load your workflow
+6. **Import** — click Import to load an existing `SKILL.md` file or paste its content
+7. **Presets** — click Presets to start from a built-in template
 
 
 ### Example output
@@ -123,9 +132,11 @@ Drop your exported `SKILL.md` files in the [`community-skills/`](community-skill
 
 ## Roadmap
 
+- [x] ~~Shareable workflow links (URL-encoded state)~~
+- [x] ~~Import existing `SKILL.md` files back onto the canvas~~
+- [x] ~~Preset templates~~
+- [x] ~~Undo / redo~~
 - [ ] Community skill gallery with search and one-click import
-- [ ] Shareable workflow links (URL-encoded state)
-- [ ] Import existing `SKILL.md` files back onto the canvas
 - [ ] Skill templates marketplace
 - [ ] Multi-agent orchestration view (subagent chains)
 - [ ] VS Code / Kiro extension for in-editor skill building
