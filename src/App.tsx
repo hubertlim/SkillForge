@@ -6,10 +6,15 @@ import NodeEditor from './components/NodeEditor';
 import ExportPanel from './components/ExportPanel';
 import ImportModal from './components/ImportModal';
 import PresetsPanel from './components/PresetsPanel';
+import KeyboardHelp from './components/KeyboardHelp';
+import ValidationBar from './components/ValidationBar';
 import ToastContainer, { showToast } from './components/Toast';
 import { useForgeStore } from './store';
 import { encodeWorkflow, decodeWorkflow } from './lib/shareUrl';
-import { FileDown, Upload, LayoutTemplate, Share2, Trash2, Undo2, AlignVerticalSpaceAround } from 'lucide-react';
+import {
+  FileDown, Upload, LayoutTemplate, Share2, Trash2,
+  Undo2, AlignVerticalSpaceAround, Keyboard,
+} from 'lucide-react';
 import type { Node } from '@xyflow/react';
 import type { SkillNodeData } from './types';
 
@@ -18,6 +23,7 @@ export default function App() {
   const { showExport, setShowExport, nodes, edges, skillName, skillDescription, undo, clearCanvas, autoLayout } = store;
   const [showImport, setShowImport] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   // Load from URL hash on mount
   useEffect(() => {
@@ -30,6 +36,26 @@ export default function App() {
       window.location.hash = '';
     }
   }, []);
+
+  // Global keyboard shortcuts for modals
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+      if (e.key === '?') {
+        setShowHelp((v) => !v);
+      }
+      if (e.key === 'Escape') {
+        setShowExport(false);
+        setShowImport(false);
+        setShowPresets(false);
+        setShowHelp(false);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [setShowExport]);
 
   const handleShare = async () => {
     const encoded = encodeWorkflow(
@@ -81,6 +107,14 @@ export default function App() {
               >
                 <AlignVerticalSpaceAround size={13} />
               </button>
+              <button
+                onClick={() => setShowHelp(true)}
+                className="p-1.5 rounded hover:bg-forge-border text-forge-muted hover:text-forge-text transition-colors"
+                title="Keyboard shortcuts (?)"
+                aria-label="Keyboard shortcuts"
+              >
+                <Keyboard size={13} />
+              </button>
             </div>
           </div>
 
@@ -119,7 +153,7 @@ export default function App() {
                          disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <FileDown size={13} />
-              Export SKILL.md
+              Export
             </button>
           </div>
         </header>
@@ -133,11 +167,15 @@ export default function App() {
           />
           <NodeEditor />
         </div>
+
+        {/* Validation warnings */}
+        <ValidationBar />
       </div>
 
       {showExport && <ExportPanel />}
       {showImport && <ImportModal onClose={() => setShowImport(false)} />}
       {showPresets && <PresetsPanel onClose={() => setShowPresets(false)} />}
+      {showHelp && <KeyboardHelp onClose={() => setShowHelp(false)} />}
       <ToastContainer />
     </ReactFlowProvider>
   );

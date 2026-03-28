@@ -113,6 +113,54 @@ export const SKILL_BLOCKS: SkillBlockTemplate[] = [
 - Review any migration or setup scripts`,
   },
   {
+    id: 'security-audit',
+    label: 'Security Audit',
+    category: 'review',
+    icon: '🛡️',
+    description: 'Audit code for security vulnerabilities',
+    defaultInstructions: `- Check for injection vulnerabilities (SQL, XSS, command)
+- Verify authentication and authorization logic
+- Review secrets management (no hardcoded keys)
+- Validate input sanitization on all user inputs
+- Check dependency vulnerabilities (npm audit)`,
+  },
+  {
+    id: 'performance',
+    label: 'Performance',
+    category: 'utility',
+    icon: '⏱️',
+    description: 'Optimize for speed and resource efficiency',
+    defaultInstructions: `- Profile and identify bottlenecks
+- Optimize database queries and N+1 problems
+- Add caching where appropriate
+- Lazy-load heavy modules and assets
+- Measure before and after with benchmarks`,
+  },
+  {
+    id: 'accessibility',
+    label: 'Accessibility',
+    category: 'review',
+    icon: '♿',
+    description: 'Ensure the UI is accessible to all users',
+    defaultInstructions: `- Add ARIA labels to interactive elements
+- Ensure keyboard navigation works throughout
+- Verify color contrast meets WCAG AA standards
+- Test with screen reader (VoiceOver / NVDA)
+- Add alt text to all images`,
+  },
+  {
+    id: 'migration',
+    label: 'Migration',
+    category: 'utility',
+    icon: '📦',
+    description: 'Plan and execute a data or code migration',
+    defaultInstructions: `- Document the current state and target state
+- Write reversible migration scripts
+- Test migration on a copy of production data
+- Plan rollback strategy
+- Verify data integrity after migration`,
+  },
+  {
     id: 'custom',
     label: 'Custom Step',
     category: 'custom',

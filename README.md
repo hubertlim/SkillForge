@@ -9,11 +9,11 @@
 </p>
 
 <p align="center">
-  <a href="#features">Features</a> •
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#contributing">Contributing</a> •
-  <a href="#community-skills">Community Skills</a> •
+  <a href="#features">Features</a> &bull;
+  <a href="#quick-start">Quick Start</a> &bull;
+  <a href="#usage">Usage</a> &bull;
+  <a href="#contributing">Contributing</a> &bull;
+  <a href="#community-skills">Community Skills</a> &bull;
   <a href="#roadmap">Roadmap</a>
 </p>
 
@@ -34,24 +34,29 @@
 
 ## Why SkillForge?
 
-The AI agent skills ecosystem is exploding — 280k+ published skills and growing. But creating skills today means writing YAML and Markdown files by hand.
+The AI agent skills ecosystem is exploding. But creating skills today means writing YAML and Markdown files by hand.
 
-SkillForge gives you a visual canvas where you drag skill blocks, wire them into workflows, edit instructions inline, and export a valid `SKILL.md` in one click. Works with **Claude Code**, **Kiro**, **GitHub Copilot**, **Cursor**, and any agent that reads the open skill format.
+SkillForge gives you a visual canvas where you drag skill blocks, wire them into workflows, edit instructions inline, and export in multiple formats. Works with **Claude Code**, **Kiro**, **GitHub Copilot**, **Cursor**, and any agent that reads the open skill format.
 
 ## Features
 
-- 🖱️ **Drag & drop** — 11 predefined blocks across 6 categories
-- 🔗 **Wire workflows** — connect blocks to define execution order
-- ✏️ **Inline editing** — label, description, and Markdown instructions per node
-- 📄 **One-click export** — generates valid `SKILL.md` with YAML frontmatter
-- � **Import** — load an existing `SKILL.md` fback onto the canvas (file upload or paste)
-- � **Shareable links** — encode your workflow into a URL and share it with anyone
-- 📦 **Preset templates** — start from TDD, API Design, Bug Fix, or Feature Ship workflows
-- ⏪ **Undo** — Ctrl+Z with a 30-step history stack
-- ⌨️ **Keyboard shortcuts** — Delete nodes, Ctrl+Z undo, Ctrl+S export
-- 📋 **Copy or download** — clipboard or file, your choice
-- 🌙 **Dark theme** — easy on the eyes, built for long sessions
-- 🐳 **Dockerized** — one command to run
+- **Drag and drop** 15 predefined blocks across 6 categories
+- **Wire workflows** connect blocks to define execution order
+- **Inline editing** label, description, and Markdown instructions per node
+- **Multi-format export** SKILL.md, Kiro steering file, or JSON
+- **Import** load an existing SKILL.md back onto the canvas (file upload or paste)
+- **Shareable links** encode your workflow into a URL and share it with anyone
+- **Preset templates** start from TDD, API Design, Bug Fix, or Feature Ship workflows
+- **Undo** Ctrl+Z with a 30-step history stack
+- **Keyboard shortcuts** Delete, Ctrl+Z, Ctrl+S, ? for help, Escape to close
+- **Right-click menu** duplicate, delete, change category from context menu
+- **Step numbering** live topological step badges on each node
+- **Auto-layout** snap nodes into a clean vertical chain
+- **Validation** warnings for disconnected nodes and empty instructions
+- **Auto-save** localStorage persistence across page refreshes
+- **Search** filter sidebar blocks by name or description
+- **Dark theme** easy on the eyes, built for long sessions
+- **Dockerized** one command to run
 
 ## Quick Start
 
@@ -79,10 +84,12 @@ npm run dev
 1. **Drag** a block from the sidebar onto the canvas
 2. **Connect** blocks by dragging from a bottom handle to a top handle
 3. **Click** a block to edit its label, description, and instructions
-4. **Export** — hit the button in the top bar to preview, copy, or download your `SKILL.md`
-5. **Share** — click Share to copy a link that anyone can open to load your workflow
-6. **Import** — click Import to load an existing `SKILL.md` file or paste its content
-7. **Presets** — click Presets to start from a built-in template
+4. **Right-click** a block for quick actions (duplicate, delete, change category)
+5. **Export** hit the button in the top bar, pick a format, preview, copy, or download
+6. **Share** click Share to copy a link that anyone can open to load your workflow
+7. **Import** click Import to load an existing SKILL.md file or paste its content
+8. **Presets** click Presets to start from a built-in template
+9. **Press ?** to see all keyboard shortcuts
 
 
 ### Example output
@@ -93,7 +100,7 @@ name: "tdd-workflow"
 description: "Use when the user asks to build a feature using test-driven development"
 ---
 
-## Step 1: 💡 Brainstorm
+## Step 1: Brainstorm
 
 > Generate and explore ideas before committing to a plan
 
@@ -101,7 +108,7 @@ description: "Use when the user asks to build a feature using test-driven develo
 - List at least 3 possible approaches
 - Recommend the best path forward
 
-## Step 2: 🧪 Test First (TDD)
+## Step 2: Test First (TDD)
 
 > Write tests before implementation code
 
@@ -109,14 +116,14 @@ description: "Use when the user asks to build a feature using test-driven develo
 - Implement the minimum code to make it pass
 - Refactor while keeping tests green
 
-## Step 3: ⚡ Implement
+## Step 3: Implement
 
 > Write production code following best practices
 
 - Follow the established plan step by step
 - Write clean, idiomatic code
 
-## Step 4: 🔍 Code Review
+## Step 4: Code Review
 
 > Review code for quality, security, and correctness
 
@@ -133,9 +140,14 @@ Drop your exported `SKILL.md` files in the [`community-skills/`](community-skill
 ## Roadmap
 
 - [x] ~~Shareable workflow links (URL-encoded state)~~
-- [x] ~~Import existing `SKILL.md` files back onto the canvas~~
+- [x] ~~Import existing SKILL.md files back onto the canvas~~
 - [x] ~~Preset templates~~
-- [x] ~~Undo / redo~~
+- [x] ~~Undo~~
+- [x] ~~Multi-format export (SKILL.md, Kiro steering, JSON)~~
+- [x] ~~Right-click context menu~~
+- [x] ~~Validation warnings~~
+- [x] ~~Auto-layout~~
+- [x] ~~localStorage persistence~~
 - [ ] Community skill gallery with search and one-click import
 - [ ] Skill templates marketplace
 - [ ] Multi-agent orchestration view (subagent chains)
@@ -165,5 +177,5 @@ Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before
 ---
 
 <p align="center">
-  Built with ⚒️ by the community
+  Built with the community
 </p>

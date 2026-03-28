@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -14,6 +14,7 @@ import '@xyflow/react/dist/style.css';
 import { useForgeStore } from '../store';
 import SkillNode from './SkillNode';
 import EmptyState from './EmptyState';
+import NodeContextMenu from './NodeContextMenu';
 import { SKILL_BLOCKS } from '../lib/skillBlocks';
 import type { SkillNodeData } from '../types';
 
@@ -33,6 +34,7 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
     addNode, selectNode, deleteNode, selectedNodeId, undo, setShowExport,
   } = useForgeStore();
   const rfRef = useRef<ReactFlowInstance<RFNode<SkillNodeData>, RFEdge> | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -109,7 +111,11 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
         }}
         onDragOver={onDragOver}
         onDrop={onDrop}
-        onPaneClick={() => selectNode(null)}
+        onPaneClick={() => { selectNode(null); setContextMenu(null); }}
+        onNodeContextMenu={(e, node) => {
+          e.preventDefault();
+          setContextMenu({ nodeId: node.id, x: e.clientX, y: e.clientY });
+        }}
         nodeTypes={nodeTypes}
         fitView
         proOptions={{ hideAttribution: true }}
@@ -122,6 +128,14 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
           maskColor="rgba(0,0,0,0.6)"
         />
       </ReactFlow>
+      {contextMenu && (
+        <NodeContextMenu
+          nodeId={contextMenu.nodeId}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 }
