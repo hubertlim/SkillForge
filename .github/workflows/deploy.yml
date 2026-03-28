@@ -24,9 +24,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run build
-        env:
-          BASE_URL: /SkillForge/
+      - run: npx tsc -b
+      - run: npx vite build --base /SkillForge/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
