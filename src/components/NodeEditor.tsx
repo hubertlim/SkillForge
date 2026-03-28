@@ -1,9 +1,9 @@
 import { useForgeStore } from '../store';
 import { CATEGORY_COLORS } from '../types';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Copy } from 'lucide-react';
 
 export default function NodeEditor() {
-  const { nodes, selectedNodeId, updateNodeData, deleteNode, selectNode } = useForgeStore();
+  const { nodes, selectedNodeId, updateNodeData, deleteNode, duplicateNode } = useForgeStore();
   const node = nodes.find((n) => n.id === selectedNodeId);
 
   if (!node) {
@@ -26,13 +26,24 @@ export default function NodeEditor() {
           <span>{data.icon}</span>
           <span className="font-semibold text-sm">{data.label}</span>
         </div>
-        <button
-          onClick={() => deleteNode(node.id)}
-          className="p-1.5 rounded hover:bg-red-500/20 text-forge-muted hover:text-red-400 transition-colors"
-          aria-label="Delete node"
-        >
-          <Trash2 size={14} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => duplicateNode(node.id)}
+            className="p-1.5 rounded hover:bg-forge-accent/20 text-forge-muted hover:text-forge-accent transition-colors"
+            aria-label="Duplicate node"
+            title="Duplicate"
+          >
+            <Copy size={14} />
+          </button>
+          <button
+            onClick={() => deleteNode(node.id)}
+            className="p-1.5 rounded hover:bg-red-500/20 text-forge-muted hover:text-red-400 transition-colors"
+            aria-label="Delete node"
+            title="Delete"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         <div>

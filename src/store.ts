@@ -10,6 +10,9 @@ import {
   addEdge,
 } from '@xyflow/react';
 import type { SkillNodeData } from './types';
+import { saveState, loadState, clearState } from './lib/persistence';
+
+const persisted = loadState();
 
 interface ForgeState {
   nodes: Node<SkillNodeData>[];
@@ -42,14 +45,16 @@ interface ForgeState {
   pushHistory: () => void;
   undo: () => void;
   clearCanvas: () => void;
+  duplicateNode: (id: string) => void;
+  autoLayout: () => void;
 }
 
 export const useForgeStore = create<ForgeState>((set, get) => ({
-  nodes: [],
-  edges: [],
+  nodes: persisted?.nodes ?? [],
+  edges: persisted?.edges ?? [],
   selectedNodeId: null,
-  skillName: 'my-skill',
-  skillDescription: 'Describe when this skill should activate',
+  skillName: persisted?.skillName ?? 'my-skill',
+  skillDescription: persisted?.skillDescription ?? 'Describe when this skill should activate',
   showExport: false,
   history: [],
   historyIndex: -1,
@@ -122,6 +127,74 @@ export const useForgeStore = create<ForgeState>((set, get) => ({
 
   clearCanvas: () => {
     get().pushHistory();
+    clearState();
     set({ nodes: [], edges: [], selectedNodeId: null });
   },
+
+  duplicateNode: (id) => {
+    const node = get().nodes.find((n) => n.id === id);
+    if (!node) return;
+    get().pushHistory();
+    const newId = `skill-${Date.now()}`;
+    const newNode: Node<SkillNodeData> = {
+      ...node,
+      id: newId,
+      position: { x: node.position.x + 40, y: node.position.y + 40 },
+      selected: false,
+      data: { ...node.data },
+    };
+    set({ nodes: [...get().nodes, newNode], selectedNodeId: newId });
+  },
+
+  autoLayout: () => {
+    const { nodes, edges } = get();
+    if (nodes.length === 0) return;
+    get().pushHistory();
+
+    // Topological sort
+    const adj = new Map<string, string[]>();
+    const inDeg = new Map<string, number>();
+    for (const n of nodes) {
+      adj.set(n.id, []);
+      inDeg.set(n.id, 0);
+    }
+    for (const e of edges) {
+      adj.get(e.source)?.push(e.target);
+      inDeg.set(e.target, (inDeg.get(e.target) ?? 0) + 1);
+    }
+    const queue = nodes.filter((n) => (inDeg.get(n.id) ?? 0) === 0).map((n) => n.id);
+    const sorted: string[] = [];
+    while (queue.length) {
+      const cur = queue.shift()!;
+      sorted.push(cur);
+      for (const next of adj.get(cur) ?? []) {
+        const deg = (inDeg.get(next) ?? 1) - 1;
+        inDeg.set(next, deg);
+        if (deg === 0) queue.push(next);
+      }
+    }
+    // Add any remaining (disconnected) nodes
+    for (const n of nodes) {
+      if (!sorted.includes(n.id)) sorted.push(n.id);
+    }
+
+    const X = 300;
+    const Y_START = 60;
+    const GAP = 140;
+    const updated = nodes.map((n) => {
+      const idx = sorted.indexOf(n.id);
+      return { ...n, position: { x: X, y: Y_START + idx * GAP } };
+    });
+    set({ nodes: updated });
+  },
 }));
+
+// Auto-persist to localStorage on every state change
+useForgeStore.subscribe((state) => {
+  saveState({
+    nodes: state.nodes,
+    edges: state.edges,
+    skillName: state.skillName,
+    skillDescription: state.skillDescription,
+  });
+});
