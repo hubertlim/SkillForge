@@ -87,6 +87,7 @@ aside .overflow-y-auto:hover::-webkit-scrollbar-thumb:hover {
   border: 1px solid #2a2a3a !important;
   border-radius: 8px !important;
   overflow: hidden;
+  z-index: 5 !important;
 }
 
 .react-flow__controls-button {
