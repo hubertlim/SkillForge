@@ -207,6 +207,61 @@ Browse skills in the app via the **Gallery** button, or contribute your own:
 | Container | Docker |
 | Deploy | GitHub Pages |
 
+## Project Structure
+
+```
+src/
+  App.tsx                          # Root component, toolbar, modal orchestration
+  store.ts                         # Zustand state (nodes, edges, history, actions)
+  types.ts                         # Shared TypeScript types and constants
+  index.css                        # Global styles, scrollbars, React Flow overrides
+  main.tsx                         # Entry point
+  components/
+    canvas/                        # Canvas and node rendering
+      Canvas.tsx                   # React Flow canvas with drag-drop, selection, shortcuts
+      SkillNode.tsx                # Custom node component (collapse, badges, preview)
+      LabeledEdge.tsx              # Custom edge with editable labels
+      EmptyState.tsx               # Empty canvas onboarding
+      NodeContextMenu.tsx          # Right-click menu for nodes
+      EdgeContextMenu.tsx          # Right-click menu for edges
+      MultiSelectToolbar.tsx       # Floating toolbar for multi-selection
+      ZoomIndicator.tsx            # Zoom percentage display
+    panels/                        # Modal panels and editors
+      NodeEditor.tsx               # Right sidebar property editor
+      ExportPanel.tsx              # Multi-format export with preview
+      ImportModal.tsx              # SKILL.md file/paste import
+      PresetsPanel.tsx             # Simple and advanced preset templates
+      GalleryPanel.tsx             # Community skill browser
+      WorkflowManager.tsx          # Save/load/delete workflows
+      DocsPanel.tsx                # Searchable documentation
+      KeyboardHelp.tsx             # Keyboard shortcuts reference
+    onboarding/                    # First-time user experience
+      WelcomeScreen.tsx            # Tutorial vs docs choice
+      InteractiveTutorial.tsx      # 5-step guided tutorial
+      onboarding.ts                # Persistence helpers
+    layout/                        # App layout
+      Sidebar.tsx                  # Block palette with search and GitHub CTA
+    ui/                            # Shared UI components
+      Toast.tsx                    # Toast notification system
+      ConfirmDialog.tsx            # Confirmation modal
+      ValidationBar.tsx            # Workflow validation warnings
+      WorkflowStats.tsx            # Stats panel (counts, categories)
+      MobileWarning.tsx            # Small screen warning
+  lib/                             # Pure logic (no React)
+    skillBlocks.ts                 # 15 predefined block templates
+    presets.ts                     # Simple + advanced preset definitions
+    communitySkills.ts             # Bundled community skill content
+    exportSkill.ts                 # SKILL.md export
+    exportFormats.ts               # Multi-format export (MD, Kiro, JSON)
+    importSkill.ts                 # SKILL.md parser
+    shareUrl.ts                    # URL encode/decode with validation
+    persistence.ts                 # localStorage state persistence
+    workflowManager.ts             # Multi-workflow storage
+docs/                              # Documentation and assets
+community-skills/                  # Community-contributed skill workflows
+.github/                           # CI, deploy, issue templates, PR template
+```
+
 ## Contributing
 
 Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.

@@ -1,6 +1,6 @@
-import { useForgeStore } from '../store';
+import { useForgeStore } from '../../store';
 import { Trash2, Copy, AlignVerticalSpaceAround } from 'lucide-react';
-import { showToast } from './Toast';
+import { showToast } from '../ui/Toast';
 
 export default function MultiSelectToolbar() {
   const nodes = useForgeStore((s) => s.nodes);

@@ -1,5 +1,5 @@
-import { useForgeStore } from '../store';
-import { CATEGORY_COLORS, type SkillCategory } from '../types';
+import { useForgeStore } from '../../store';
+import { CATEGORY_COLORS, type SkillCategory } from '../../types';
 import { Copy, Trash2, Palette, Unlink } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 

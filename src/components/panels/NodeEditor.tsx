@@ -1,8 +1,8 @@
-import { useForgeStore } from '../store';
-import { CATEGORY_COLORS, type SkillCategory } from '../types';
+import { useForgeStore } from '../../store';
+import { CATEGORY_COLORS, type SkillCategory } from '../../types';
 import { Trash2, Copy, Layers, Unlink, ArrowDown, ArrowUp } from 'lucide-react';
-import WorkflowStats from './WorkflowStats';
-import { showToast } from './Toast';
+import WorkflowStats from '../ui/WorkflowStats';
+import { showToast } from '../ui/Toast';
 
 const CATEGORY_OPTIONS: { key: SkillCategory; label: string }[] = [
   { key: 'planning', label: 'Planning' },

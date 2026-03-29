@@ -10,7 +10,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { useForgeStore } from '../store';
+import { useForgeStore } from '../../store';
 import SkillNode from './SkillNode';
 import LabeledEdge from './LabeledEdge';
 import EmptyState from './EmptyState';
@@ -18,8 +18,8 @@ import NodeContextMenu from './NodeContextMenu';
 import EdgeContextMenu from './EdgeContextMenu';
 import MultiSelectToolbar from './MultiSelectToolbar';
 import ZoomIndicator from './ZoomIndicator';
-import { SKILL_BLOCKS } from '../lib/skillBlocks';
-import { CATEGORY_COLORS, type SkillNodeData, type SkillCategory } from '../types';
+import { SKILL_BLOCKS } from '../../lib/skillBlocks';
+import { CATEGORY_COLORS, type SkillNodeData, type SkillCategory } from '../../types';
 
 const nodeTypes = { skill: SkillNode };
 const edgeTypes = { labeled: LabeledEdge };

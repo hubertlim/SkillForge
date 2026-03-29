@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search, PanelLeftClose, PanelLeftOpen, Star, Github } from 'lucide-react';
-import { SKILL_BLOCKS } from '../lib/skillBlocks';
-import { CATEGORY_COLORS, type SkillCategory } from '../types';
+import { SKILL_BLOCKS } from '../../lib/skillBlocks';
+import { CATEGORY_COLORS, type SkillCategory } from '../../types';
 
 const REPO_URL = 'https://github.com/hubertlim/SkillForge';
 

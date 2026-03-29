@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useForgeStore } from '../store';
-import { CATEGORY_COLORS, type SkillCategory } from '../types';
+import { useForgeStore } from '../../store';
+import { CATEGORY_COLORS, type SkillCategory } from '../../types';
 import { Blocks, GitFork, Layers } from 'lucide-react';
 
 const CAT_LABELS: Record<SkillCategory, string> = {

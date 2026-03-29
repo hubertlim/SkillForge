@@ -5,7 +5,7 @@ import {
   getBezierPath,
   type EdgeProps,
 } from '@xyflow/react';
-import { useForgeStore } from '../store';
+import { useForgeStore } from '../../store';
 
 export default function LabeledEdge({
   id,

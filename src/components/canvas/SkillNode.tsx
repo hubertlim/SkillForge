@@ -1,7 +1,7 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import type { SkillNodeData } from '../types';
-import { CATEGORY_COLORS } from '../types';
-import { useForgeStore } from '../store';
+import type { SkillNodeData } from '../../types';
+import { CATEGORY_COLORS } from '../../types';
+import { useForgeStore } from '../../store';
 import { useMemo } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 

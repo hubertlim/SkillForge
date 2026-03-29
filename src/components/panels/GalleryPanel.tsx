@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { X, Search, Download } from 'lucide-react';
-import { COMMUNITY_SKILLS } from '../lib/communitySkills';
-import { parseSkillMd, parsedSkillToNodes } from '../lib/importSkill';
-import { useForgeStore } from '../store';
-import { showToast } from './Toast';
+import { COMMUNITY_SKILLS } from '../../lib/communitySkills';
+import { parseSkillMd, parsedSkillToNodes } from '../../lib/importSkill';
+import { useForgeStore } from '../../store';
+import { showToast } from '../ui/Toast';
 
 interface Props {
   onClose: () => void;

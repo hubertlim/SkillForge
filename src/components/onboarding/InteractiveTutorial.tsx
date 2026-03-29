@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useForgeStore } from '../store';
+import { useForgeStore } from '../../store';
 import { CheckCircle, Circle, X, ChevronRight, PartyPopper } from 'lucide-react';
-import { showToast } from './Toast';
+import { showToast } from '../ui/Toast';
 
 interface TutorialStep {
   id: string;

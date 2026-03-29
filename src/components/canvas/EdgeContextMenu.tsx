@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { useForgeStore } from '../store';
+import { useForgeStore } from '../../store';
 import { Unlink, Tag } from 'lucide-react';
-import { showToast } from './Toast';
+import { showToast } from '../ui/Toast';
 
 interface Props {
   edgeId: string;

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { X, Upload, FileText } from 'lucide-react';
-import { parseSkillMd, parsedSkillToNodes } from '../lib/importSkill';
-import { useForgeStore } from '../store';
-import { showToast } from './Toast';
+import { parseSkillMd, parsedSkillToNodes } from '../../lib/importSkill';
+import { useForgeStore } from '../../store';
+import { showToast } from '../ui/Toast';
 
 const MAX_FILE_SIZE = 512_000; // 512KB
 const MAX_PASTE_LENGTH = 200_000; // 200K chars

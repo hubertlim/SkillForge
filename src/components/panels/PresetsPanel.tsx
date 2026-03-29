@@ -1,9 +1,9 @@
 import { X } from 'lucide-react';
-import { PRESETS, type Preset } from '../lib/presets';
-import { useForgeStore } from '../store';
+import { PRESETS, type Preset } from '../../lib/presets';
+import { useForgeStore } from '../../store';
 import type { Node, Edge } from '@xyflow/react';
-import type { SkillNodeData } from '../types';
-import { showToast } from './Toast';
+import type { SkillNodeData } from '../../types';
+import { showToast } from '../ui/Toast';
 
 interface Props {
   onClose: () => void;

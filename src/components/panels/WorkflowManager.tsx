@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { X, Save, FolderOpen, Trash2, Plus } from 'lucide-react';
-import { listWorkflows, saveWorkflow, deleteWorkflow, generateId, type SavedWorkflow } from '../lib/workflowManager';
-import { useForgeStore } from '../store';
-import { showToast } from './Toast';
+import { listWorkflows, saveWorkflow, deleteWorkflow, generateId, type SavedWorkflow } from '../../lib/workflowManager';
+import { useForgeStore } from '../../store';
+import { showToast } from '../ui/Toast';
 import type { Node } from '@xyflow/react';
-import type { SkillNodeData } from '../types';
+import type { SkillNodeData } from '../../types';
 
 interface Props {
   onClose: () => void;

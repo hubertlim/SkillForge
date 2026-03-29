@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import { useForgeStore } from '../store';
+import { useForgeStore } from '../../store';
 
 interface Warning {
   nodeId: string;
