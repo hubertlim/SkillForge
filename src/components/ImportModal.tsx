@@ -4,6 +4,10 @@ import { parseSkillMd, parsedSkillToNodes } from '../lib/importSkill';
 import { useForgeStore } from '../store';
 import { showToast } from './Toast';
 
+const MAX_FILE_SIZE = 512_000; // 512KB
+const MAX_PASTE_LENGTH = 200_000; // 200K chars
+const ALLOWED_TYPES = ['text/markdown', 'text/plain', 'text/x-markdown', 'application/octet-stream', ''];
+
 interface Props {
   onClose: () => void;
 }
@@ -13,7 +17,8 @@ export default function ImportModal({ onClose }: Props) {
   const store = useForgeStore();
 
   const handleImport = () => {
-    const parsed = parseSkillMd(content);
+    if (!content.trim()) return;
+    const parsed = parseSkillMd(content.slice(0, MAX_PASTE_LENGTH));
     if (!parsed) {
       showToast('Could not parse SKILL.md — check the format', 'error');
       return;
@@ -27,9 +32,36 @@ export default function ImportModal({ onClose }: Props) {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      showToast(`File too large (max ${MAX_FILE_SIZE / 1000}KB)`, 'error');
+      return;
+    }
+
+    // Validate MIME type
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      showToast('Invalid file type — expected a Markdown file', 'error');
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = () => setContent(reader.result as string);
+    reader.onload = () => {
+      const text = reader.result as string;
+      setContent(text.slice(0, MAX_PASTE_LENGTH));
+    };
+    reader.onerror = () => showToast('Failed to read file', 'error');
     reader.readAsText(file);
+  };
+
+  const handlePaste = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    if (val.length > MAX_PASTE_LENGTH) {
+      setContent(val.slice(0, MAX_PASTE_LENGTH));
+      showToast('Content truncated to 200K characters', 'error');
+    } else {
+      setContent(val);
+    }
   };
 
   return (
@@ -46,17 +78,18 @@ export default function ImportModal({ onClose }: Props) {
           <label className="flex items-center gap-2 px-4 py-3 rounded-lg border border-dashed border-forge-border
                             hover:border-forge-accent cursor-pointer transition-colors text-sm text-forge-muted">
             <FileText size={16} />
-            <span>Choose a SKILL.md file</span>
-            <input type="file" accept=".md,.markdown" onChange={handleFile} className="hidden" />
+            <span>Choose a SKILL.md file (max 512KB)</span>
+            <input type="file" accept=".md,.markdown,.txt" onChange={handleFile} className="hidden" />
           </label>
 
           <div className="text-xs text-forge-muted text-center">or paste content below</div>
 
           <textarea
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={handlePaste}
             rows={14}
-            placeholder={`---\nname: "my-skill"\ndescription: "When to activate"\n---\n\n## Step 1: 💡 Brainstorm\n\n> Explore ideas\n\n- Gather requirements\n- List approaches`}
+            maxLength={MAX_PASTE_LENGTH}
+            placeholder={`---\nname: "my-skill"\ndescription: "When to activate"\n---\n\n## Step 1: Brainstorm\n\n> Explore ideas\n\n- Gather requirements\n- List approaches`}
             className="w-full bg-forge-bg border border-forge-border rounded-lg px-4 py-3 text-xs
                        font-mono leading-relaxed resize-y focus:outline-none focus:border-forge-accent"
           />
