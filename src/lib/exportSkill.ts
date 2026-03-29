@@ -65,5 +65,7 @@ export function exportToSkillMd(
     lines.push('');
   }
 
+  lines.push('<!-- Built with SkillForge — https://github.com/hubertlim/SkillForge -->');
+
   return lines.join('\n');
 }

@@ -102,9 +102,17 @@ export default function ExportPanel() {
 
         {/* Actions */}
         <div className="flex items-center justify-between px-5 py-3 border-t border-forge-border">
-          <span className="text-[11px] text-forge-muted">
-            {formatInfo.filename}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-forge-muted">{formatInfo.filename}</span>
+            <a
+              href={`https://x.com/intent/tweet?text=${encodeURIComponent(`I just built a "${skillName}" AI agent skill workflow with SkillForge`)}&url=${encodeURIComponent('https://hubertlim.github.io/SkillForge/')}`}
+              target="_blank"
+              rel="noopener"
+              className="text-[11px] text-forge-muted hover:text-forge-accent transition-colors"
+            >
+              Share on X
+            </a>
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopy}

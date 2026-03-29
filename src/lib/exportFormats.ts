@@ -71,6 +71,8 @@ function exportToKiroSteering(
     lines.push('');
   }
 
+  lines.push('<!-- Built with SkillForge — https://github.com/hubertlim/SkillForge -->');
+
   return lines.join('\n');
 }
 
@@ -83,6 +85,7 @@ function exportToJson(
   const workflow = {
     name: options.skillName,
     description: options.skillDescription,
+    _meta: { generator: 'SkillForge', url: 'https://github.com/hubertlim/SkillForge' },
     steps: sorted.map((n, i) => {
       const d = n.data as SkillNodeData;
       return {

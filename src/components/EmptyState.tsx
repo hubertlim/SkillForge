@@ -1,4 +1,4 @@
-import { MousePointerClick, LayoutTemplate, Upload } from 'lucide-react';
+import { MousePointerClick, LayoutTemplate, Upload, Star } from 'lucide-react';
 
 interface Props {
   onOpenPresets: () => void;
@@ -9,7 +9,7 @@ export default function EmptyState({ onOpenPresets, onOpenImport }: Props) {
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
       <div className="pointer-events-auto text-center max-w-sm">
-        <div className="text-5xl mb-4">⚒️</div>
+        <div className="text-5xl mb-4">&#x2692;&#xFE0F;</div>
         <h2 className="text-lg font-semibold mb-2">Start building your skill</h2>
         <p className="text-sm text-forge-muted mb-6 leading-relaxed">
           Drag blocks from the sidebar, load a preset template, or import an existing SKILL.md
@@ -35,6 +35,17 @@ export default function EmptyState({ onOpenPresets, onOpenImport }: Props) {
             <Upload size={16} className="text-forge-accent shrink-0" />
             <span>Import a SKILL.md file</span>
           </button>
+        </div>
+        <div className="mt-6 pt-4 border-t border-forge-border/50">
+          <a
+            href="https://github.com/hubertlim/SkillForge"
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-2 text-xs text-forge-muted hover:text-amber-400 transition-colors"
+          >
+            <Star size={12} />
+            <span>Star on GitHub if you find this useful</span>
+          </a>
         </div>
       </div>
     </div>

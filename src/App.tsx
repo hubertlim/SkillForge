@@ -237,6 +237,31 @@ export default function App() {
                       >
                         GitHub Repository
                       </a>
+                      <a
+                        href="https://github.com/hubertlim/SkillForge/issues/new?template=bug_report.yml"
+                        target="_blank"
+                        rel="noopener"
+                        className="block px-3 py-2 text-xs text-forge-muted hover:text-forge-text hover:bg-forge-bg transition-colors"
+                      >
+                        Report a Bug
+                      </a>
+                      <a
+                        href="https://github.com/hubertlim/SkillForge/issues/new?template=feature_request.yml"
+                        target="_blank"
+                        rel="noopener"
+                        className="block px-3 py-2 text-xs text-forge-muted hover:text-forge-text hover:bg-forge-bg transition-colors"
+                      >
+                        Request a Feature
+                      </a>
+                      <div className="border-t border-forge-border my-1" />
+                      <a
+                        href={`https://x.com/intent/tweet?text=${encodeURIComponent('Check out SkillForge — a visual drag-and-drop builder for AI agent skills')}&url=${encodeURIComponent('https://hubertlim.github.io/SkillForge/')}`}
+                        target="_blank"
+                        rel="noopener"
+                        className="block px-3 py-2 text-xs text-forge-muted hover:text-forge-text hover:bg-forge-bg transition-colors"
+                      >
+                        Share on X
+                      </a>
                     </div>
                   )}
                 </div>
