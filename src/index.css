@@ -8,6 +8,55 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── Custom scrollbars ── */
+
+/* Webkit (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a3a;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7c5cfc;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a3a transparent;
+}
+
+/* Modals and panels — slightly wider for usability */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Hide scrollbar on sidebar until hover */
+aside .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+aside .overflow-y-auto:hover::-webkit-scrollbar-thumb {
+  background: #2a2a3a;
+}
+
+aside .overflow-y-auto:hover::-webkit-scrollbar-thumb:hover {
+  background: #7c5cfc;
+}
+
 /* React Flow overrides */
 .react-flow__background {
   background-color: #0f0f13 !important;
