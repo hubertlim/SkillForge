@@ -229,40 +229,82 @@ export const useForgeStore = create<ForgeState>((set, get) => ({
     if (nodes.length === 0) return;
     get().pushHistory();
 
-    // Topological sort
-    const adj = new Map<string, string[]>();
+    // Build adjacency and in-degree maps
+    const children = new Map<string, string[]>();
+    const parents = new Map<string, string[]>();
     const inDeg = new Map<string, number>();
     for (const n of nodes) {
-      adj.set(n.id, []);
+      children.set(n.id, []);
+      parents.set(n.id, []);
       inDeg.set(n.id, 0);
     }
     for (const e of edges) {
-      adj.get(e.source)?.push(e.target);
+      children.get(e.source)?.push(e.target);
+      parents.get(e.target)?.push(e.source);
       inDeg.set(e.target, (inDeg.get(e.target) ?? 0) + 1);
     }
-    const queue = nodes.filter((n) => (inDeg.get(n.id) ?? 0) === 0).map((n) => n.id);
-    const sorted: string[] = [];
-    while (queue.length) {
-      const cur = queue.shift()!;
-      sorted.push(cur);
-      for (const next of adj.get(cur) ?? []) {
-        const deg = (inDeg.get(next) ?? 1) - 1;
-        inDeg.set(next, deg);
-        if (deg === 0) queue.push(next);
-      }
-    }
-    // Add any remaining (disconnected) nodes
-    for (const n of nodes) {
-      if (!sorted.includes(n.id)) sorted.push(n.id);
+
+    // Assign layers using longest-path (ensures parallel nodes share a layer)
+    const layer = new Map<string, number>();
+    const visited = new Set<string>();
+
+    function assignLayer(id: string): number {
+      if (layer.has(id)) return layer.get(id)!;
+      if (visited.has(id)) return 0; // cycle guard
+      visited.add(id);
+      const pars = parents.get(id) ?? [];
+      const depth = pars.length === 0 ? 0 : Math.max(...pars.map(assignLayer)) + 1;
+      layer.set(id, depth);
+      return depth;
     }
 
-    const X = 300;
+    for (const n of nodes) assignLayer(n.id);
+
+    // Handle disconnected nodes — put them after the last layer
+    let maxLayer = 0;
+    for (const l of layer.values()) if (l > maxLayer) maxLayer = l;
+    for (const n of nodes) {
+      if (!layer.has(n.id)) {
+        maxLayer++;
+        layer.set(n.id, maxLayer);
+      }
+    }
+
+    // Group nodes by layer
+    const layers = new Map<number, string[]>();
+    for (const n of nodes) {
+      const l = layer.get(n.id) ?? 0;
+      if (!layers.has(l)) layers.set(l, []);
+      layers.get(l)!.push(n.id);
+    }
+
+    // Layout constants
     const Y_START = 60;
-    const GAP = 140;
-    const updated = nodes.map((n) => {
-      const idx = sorted.indexOf(n.id);
-      return { ...n, position: { x: X, y: Y_START + idx * GAP } };
-    });
+    const Y_GAP = 160;
+    const X_GAP = 260;
+
+    // Position nodes: center each layer horizontally
+    const positions = new Map<string, { x: number; y: number }>();
+    const sortedLayers = [...layers.keys()].sort((a, b) => a - b);
+
+    for (const l of sortedLayers) {
+      const ids = layers.get(l)!;
+      const count = ids.length;
+      const totalWidth = (count - 1) * X_GAP;
+      const startX = 300 - totalWidth / 2;
+
+      ids.forEach((id, i) => {
+        positions.set(id, {
+          x: Math.round((startX + i * X_GAP) / 20) * 20, // snap to grid
+          y: Y_START + l * Y_GAP,
+        });
+      });
+    }
+
+    const updated = nodes.map((n) => ({
+      ...n,
+      position: positions.get(n.id) ?? n.position,
+    }));
     set({ nodes: updated });
   },
 
