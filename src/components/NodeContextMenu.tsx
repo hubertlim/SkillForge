@@ -1,6 +1,6 @@
 import { useForgeStore } from '../store';
 import { CATEGORY_COLORS, type SkillCategory } from '../types';
-import { Copy, Trash2, Palette } from 'lucide-react';
+import { Copy, Trash2, Palette, Unlink } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface Props {
@@ -20,7 +20,7 @@ const CATEGORIES: { key: SkillCategory; label: string }[] = [
 ];
 
 export default function NodeContextMenu({ nodeId, x, y, onClose }: Props) {
-  const { duplicateNode, deleteNode, updateNodeData } = useForgeStore();
+  const { duplicateNode, deleteNode, updateNodeData, disconnectNode, edges } = useForgeStore();
   const [showCategories, setShowCategories] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -79,6 +79,16 @@ export default function NodeContextMenu({ nodeId, x, y, onClose }: Props) {
       </div>
 
       <div className="border-t border-forge-border my-1" />
+
+      {edges.some((e) => e.source === nodeId || e.target === nodeId) && (
+        <button
+          onClick={() => { disconnectNode(nodeId); onClose(); }}
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-amber-400 hover:bg-amber-500/10 transition-colors"
+        >
+          <Unlink size={13} />
+          Disconnect all
+        </button>
+      )}
 
       <button
         onClick={() => { deleteNode(nodeId); onClose(); }}

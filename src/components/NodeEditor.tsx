@@ -1,6 +1,6 @@
 import { useForgeStore } from '../store';
 import { CATEGORY_COLORS, type SkillCategory } from '../types';
-import { Trash2, Copy, Layers } from 'lucide-react';
+import { Trash2, Copy, Layers, Unlink, ArrowDown, ArrowUp } from 'lucide-react';
 import WorkflowStats from './WorkflowStats';
 import { showToast } from './Toast';
 
@@ -15,7 +15,7 @@ const CATEGORY_OPTIONS: { key: SkillCategory; label: string }[] = [
 
 export default function NodeEditor() {
   const { nodes, selectedNodeId, updateNodeData, deleteNode, duplicateNode,
-          deleteSelectedNodes, duplicateSelectedNodes } = useForgeStore();
+          deleteSelectedNodes, duplicateSelectedNodes, edges, deleteEdge, disconnectNode } = useForgeStore();
 
   const selectedNodes = nodes.filter((n) => n.selected);
   const multiSelected = selectedNodes.length > 1;
@@ -180,6 +180,68 @@ export default function NodeEditor() {
           <div className="w-2 h-2 rounded-full" style={{ background: color }} />
           <span className="capitalize">{data.category}</span>
         </div>
+
+        {/* Connections */}
+        {(() => {
+          const incoming = edges.filter((e) => e.target === node.id);
+          const outgoing = edges.filter((e) => e.source === node.id);
+          const hasConnections = incoming.length > 0 || outgoing.length > 0;
+          if (!hasConnections) return null;
+
+          return (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs text-forge-muted">Connections</label>
+                <button
+                  onClick={() => { disconnectNode(node.id); showToast('All connections removed'); }}
+                  className="text-[10px] text-forge-muted hover:text-red-400 transition-colors"
+                >
+                  Disconnect all
+                </button>
+              </div>
+              <div className="space-y-1">
+                {incoming.map((e) => {
+                  const src = nodes.find((n) => n.id === e.source);
+                  return (
+                    <div key={e.id} className="flex items-center justify-between px-2 py-1.5 rounded bg-forge-bg border border-forge-border text-xs">
+                      <div className="flex items-center gap-1.5 text-forge-muted min-w-0">
+                        <ArrowDown size={11} className="text-emerald-400 shrink-0" />
+                        <span className="truncate">from {src ? src.data.label : '?'}</span>
+                      </div>
+                      <button
+                        onClick={() => { deleteEdge(e.id); showToast('Connection removed'); }}
+                        className="p-0.5 rounded hover:bg-red-500/20 text-forge-muted hover:text-red-400 transition-colors shrink-0 ml-1"
+                        title="Remove connection"
+                        aria-label="Remove connection"
+                      >
+                        <Unlink size={11} />
+                      </button>
+                    </div>
+                  );
+                })}
+                {outgoing.map((e) => {
+                  const tgt = nodes.find((n) => n.id === e.target);
+                  return (
+                    <div key={e.id} className="flex items-center justify-between px-2 py-1.5 rounded bg-forge-bg border border-forge-border text-xs">
+                      <div className="flex items-center gap-1.5 text-forge-muted min-w-0">
+                        <ArrowUp size={11} className="text-blue-400 shrink-0" />
+                        <span className="truncate">to {tgt ? tgt.data.label : '?'}</span>
+                      </div>
+                      <button
+                        onClick={() => { deleteEdge(e.id); showToast('Connection removed'); }}
+                        className="p-0.5 rounded hover:bg-red-500/20 text-forge-muted hover:text-red-400 transition-colors shrink-0 ml-1"
+                        title="Remove connection"
+                        aria-label="Remove connection"
+                      >
+                        <Unlink size={11} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </aside>
   );

@@ -61,6 +61,8 @@ interface ForgeState {
   setSkillDescription: (desc: string) => void;
   setShowExport: (show: boolean) => void;
   deleteNode: (id: string) => void;
+  deleteEdge: (id: string) => void;
+  disconnectNode: (nodeId: string) => void;
   loadWorkflow: (
     nodes: Node<SkillNodeData>[],
     edges: Edge[],
@@ -139,6 +141,18 @@ export const useForgeStore = create<ForgeState>((set, get) => ({
       edges: get().edges.filter((e) => e.source !== id && e.target !== id),
       selectedNodeId: get().selectedNodeId === id ? null : get().selectedNodeId,
     });
+  },
+
+  deleteEdge: (id) => {
+    get().pushHistory();
+    set({ edges: get().edges.filter((e) => e.id !== id) });
+  },
+
+  disconnectNode: (nodeId) => {
+    const edgesToRemove = get().edges.filter((e) => e.source === nodeId || e.target === nodeId);
+    if (edgesToRemove.length === 0) return;
+    get().pushHistory();
+    set({ edges: get().edges.filter((e) => e.source !== nodeId && e.target !== nodeId) });
   },
 
   loadWorkflow: (nodes, edges, skillName, skillDescription) => {

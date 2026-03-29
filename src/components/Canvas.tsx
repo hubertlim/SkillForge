@@ -15,6 +15,7 @@ import SkillNode from './SkillNode';
 import LabeledEdge from './LabeledEdge';
 import EmptyState from './EmptyState';
 import NodeContextMenu from './NodeContextMenu';
+import EdgeContextMenu from './EdgeContextMenu';
 import MultiSelectToolbar from './MultiSelectToolbar';
 import ZoomIndicator from './ZoomIndicator';
 import { SKILL_BLOCKS } from '../lib/skillBlocks';
@@ -43,6 +44,7 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rfRef = useRef<any>(null);
   const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
+  const [edgeMenu, setEdgeMenu] = useState<{ edgeId: string; sourceLabel: string; targetLabel: string; x: number; y: number } | null>(null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -172,10 +174,24 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
         }}
         onDragOver={onDragOver}
         onDrop={onDrop}
-        onPaneClick={() => { selectNode(null); setContextMenu(null); }}
+        onPaneClick={() => { selectNode(null); setContextMenu(null); setEdgeMenu(null); }}
         onNodeContextMenu={(e, node) => {
           e.preventDefault();
+          setEdgeMenu(null);
           setContextMenu({ nodeId: node.id, x: e.clientX, y: e.clientY });
+        }}
+        onEdgeContextMenu={(e, edge) => {
+          e.preventDefault();
+          setContextMenu(null);
+          const sourceNode = nodes.find((n) => n.id === edge.source);
+          const targetNode = nodes.find((n) => n.id === edge.target);
+          setEdgeMenu({
+            edgeId: edge.id,
+            sourceLabel: sourceNode ? `${sourceNode.data.icon} ${sourceNode.data.label}` : edge.source,
+            targetLabel: targetNode ? `${targetNode.data.icon} ${targetNode.data.label}` : edge.target,
+            x: e.clientX,
+            y: e.clientY,
+          });
         }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
@@ -199,6 +215,16 @@ export default function Canvas({ onOpenPresets, onOpenImport }: Props) {
           x={contextMenu.x}
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+      {edgeMenu && (
+        <EdgeContextMenu
+          edgeId={edgeMenu.edgeId}
+          sourceLabel={edgeMenu.sourceLabel}
+          targetLabel={edgeMenu.targetLabel}
+          x={edgeMenu.x}
+          y={edgeMenu.y}
+          onClose={() => setEdgeMenu(null)}
         />
       )}
     </div>
