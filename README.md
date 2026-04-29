@@ -27,7 +27,11 @@
   <a href="https://github.com/hubertlim/SkillForge/pulls"><img src="https://img.shields.io/github/issues-pr/hubertlim/SkillForge?style=flat-square" alt="PRs" /></a>
 </p>
 
-<!-- Add a screenshot: take one and save as docs/screenshot.png -->
+<p align="center">
+  <a href="https://hubertlim.github.io/SkillForge/">
+    <img src="docs/demo-screenshot.png" alt="SkillForge — Visual AI Skill Builder" width="700"/>
+  </a>
+</p>
 <!-- <p align="center">
   <img src="docs/screenshot.png" width="800" alt="SkillForge screenshot" />
 </p> -->
